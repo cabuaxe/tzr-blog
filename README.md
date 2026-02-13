@@ -97,7 +97,42 @@ On first run with dev profile, the application seeds:
 - 22 articles (10 practice + 12 academic)
 - 26 tags
 
-## Production Build
+## Production Deployment
+
+### Docker (recommended)
+
+```bash
+# Build and run with Docker Compose (includes PostgreSQL)
+docker compose up -d
+
+# App available at http://localhost:8080
+```
+
+### Docker image only
+
+```bash
+# Build the image
+docker build -t tzr-blog .
+
+# Run with external PostgreSQL
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e DB_HOST=your-db-host \
+  -e DB_USER=tzr \
+  -e DB_PASSWORD=your-password \
+  -e JWT_SECRET=your-256-bit-secret \
+  tzr-blog
+```
+
+### GitHub Container Registry
+
+A Docker image is automatically built and pushed to GHCR on version tags:
+
+```bash
+docker pull ghcr.io/cabuaxe/tzr-blog:latest
+```
+
+### Manual build
 
 ```bash
 # Build Angular
@@ -110,9 +145,22 @@ cp -r dist/frontend/browser/* ../backend/src/main/resources/static/
 cd ../backend && ./mvnw clean package -DskipTests
 
 # Run
-DB_HOST=db DB_USER=kita DB_PASSWORD=secret JWT_SECRET=<256-bit-key> \
+DB_HOST=db DB_USER=tzr DB_PASSWORD=secret JWT_SECRET=<256-bit-key> \
   java -jar target/tzr-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SPRING_PROFILES_ACTIVE` | Yes | — | Set to `prod` for production |
+| `DB_HOST` | Yes (prod) | `localhost` | PostgreSQL host |
+| `DB_PORT` | No | `5432` | PostgreSQL port |
+| `DB_NAME` | No | `tzr` | Database name |
+| `DB_USER` | Yes (prod) | — | Database username |
+| `DB_PASSWORD` | Yes (prod) | — | Database password |
+| `JWT_SECRET` | Yes (prod) | — | JWT signing key (min 256 bits) |
+| `PORT` | No | `8080` | Server port |
 
 ## Branch Protection (Recommended)
 
