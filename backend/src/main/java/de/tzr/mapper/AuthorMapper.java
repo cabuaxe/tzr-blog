@@ -10,10 +10,13 @@ import org.springframework.stereotype.Component;
 public class AuthorMapper {
 
     public AuthorDTO toDTO(Author a) {
+        return toDTO(a, 0);
+    }
+
+    public AuthorDTO toDTO(Author a, int articleCount) {
         return new AuthorDTO(
             a.getId(), a.getName(), a.getSlug(), a.getBio(),
-            a.getEmail(), a.getAvatarUrl(),
-            a.getArticles() != null ? a.getArticles().size() : 0
+            a.getEmail(), a.getAvatarUrl(), articleCount
         );
     }
 

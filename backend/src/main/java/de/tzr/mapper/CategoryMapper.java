@@ -11,11 +11,14 @@ import org.springframework.stereotype.Component;
 public class CategoryMapper {
 
     public CategoryDTO toDTO(Category c) {
+        return toDTO(c, 0);
+    }
+
+    public CategoryDTO toDTO(Category c, int articleCount) {
         return new CategoryDTO(
             c.getId(), c.getName(), c.getSlug(), c.getDisplayName(),
             c.getDescription(), c.getEmoji(), c.getColor(), c.getBgColor(),
-            c.getType().name(), c.getSortOrder(),
-            c.getArticles() != null ? c.getArticles().size() : 0
+            c.getType().name(), c.getSortOrder(), articleCount
         );
     }
 

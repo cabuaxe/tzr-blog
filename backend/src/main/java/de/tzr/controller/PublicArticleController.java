@@ -22,6 +22,7 @@ public class PublicArticleController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String author,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Boolean academic,
             @RequestParam(required = false) String tag,
@@ -30,6 +31,7 @@ public class PublicArticleController {
         Pageable pageable = createPageable(page, Math.min(size, 50), sort);
 
         if (category != null) return articleService.getByCategory(category, pageable);
+        if (author != null) return articleService.getByAuthor(author, pageable);
         if (tag != null) return articleService.getByTag(tag, pageable);
         if (academic != null && academic) return articleService.getAcademic(pageable);
         if (type != null) return articleService.getByCategoryType(type, pageable);

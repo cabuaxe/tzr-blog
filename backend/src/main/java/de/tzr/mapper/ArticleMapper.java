@@ -45,7 +45,6 @@ public class ArticleMapper {
     }
 
     private TagDTO toTagDTO(Tag t) {
-        return new TagDTO(t.getId(), t.getName(), t.getSlug(),
-            t.getArticles() != null ? t.getArticles().size() : 0);
+        return new TagDTO(t.getId(), t.getName(), t.getSlug(), 0);
     }
 }

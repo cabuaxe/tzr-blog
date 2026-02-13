@@ -11,11 +11,12 @@ export class ArticleService {
   private api = environment.apiUrl;
 
   // Public endpoints
-  getPublishedArticles(params: { page?: number; size?: number; category?: string; type?: string; academic?: boolean; tag?: string; sort?: string } = {}): Observable<PageResponse<ArticleList>> {
+  getPublishedArticles(params: { page?: number; size?: number; category?: string; author?: string; type?: string; academic?: boolean; tag?: string; sort?: string } = {}): Observable<PageResponse<ArticleList>> {
     let httpParams = new HttpParams();
     if (params.page !== undefined) httpParams = httpParams.set('page', params.page);
     if (params.size !== undefined) httpParams = httpParams.set('size', params.size);
     if (params.category) httpParams = httpParams.set('category', params.category);
+    if (params.author) httpParams = httpParams.set('author', params.author);
     if (params.type) httpParams = httpParams.set('type', params.type);
     if (params.academic !== undefined) httpParams = httpParams.set('academic', params.academic);
     if (params.tag) httpParams = httpParams.set('tag', params.tag);

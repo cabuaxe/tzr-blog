@@ -28,21 +28,22 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public List<CategoryDTO> getAll() {
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-            .map(categoryMapper::toDTO).toList();
+            .map(c -> categoryMapper.toDTO(c, (int) articleRepository.countByCategoryId(c.getId())))
+            .toList();
     }
 
     @Transactional(readOnly = true)
     public CategoryDTO getBySlug(String slug) {
         Category category = categoryRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + slug));
-        return categoryMapper.toDTO(category);
+        return categoryMapper.toDTO(category, (int) articleRepository.countByCategoryId(category.getId()));
     }
 
     @Transactional(readOnly = true)
     public CategoryDTO getById(Long id) {
         Category category = categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id));
-        return categoryMapper.toDTO(category);
+        return categoryMapper.toDTO(category, (int) articleRepository.countByCategoryId(id));
     }
 
     public CategoryDTO create(CategoryCreateDTO dto) {

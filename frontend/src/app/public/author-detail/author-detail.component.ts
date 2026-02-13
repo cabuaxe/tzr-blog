@@ -83,14 +83,9 @@ export class AuthorDetailComponent implements OnInit {
   loadArticles(slug?: string) {
     const s = slug || this.author()?.slug;
     if (!s) return;
-    // Use the public articles endpoint with author filter - since we don't have a dedicated author filter param,
-    // we'll rely on the author detail endpoint from the backend which returns articles
-    // For now, use the general listing and note we'd need backend support
-    this.articleService.getPublishedArticles({ page: this.page(), size: 12 }).subscribe(res => {
-      // Filter client-side as fallback - ideally backend has author filter
-      const filtered = res.content.filter(a => a.author.slug === s);
-      this.articles.set(filtered);
-      this.totalPages.set(1); // Simplified
+    this.articleService.getPublishedArticles({ page: this.page(), size: 12, author: s }).subscribe(res => {
+      this.articles.set(res.content);
+      this.totalPages.set(res.totalPages);
     });
   }
 

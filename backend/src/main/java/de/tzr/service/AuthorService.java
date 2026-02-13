@@ -26,21 +26,23 @@ public class AuthorService {
 
     @Transactional(readOnly = true)
     public List<AuthorDTO> getAll() {
-        return authorRepository.findAll().stream().map(authorMapper::toDTO).toList();
+        return authorRepository.findAll().stream()
+            .map(a -> authorMapper.toDTO(a, (int) articleRepository.countByAuthorId(a.getId())))
+            .toList();
     }
 
     @Transactional(readOnly = true)
     public AuthorDTO getBySlug(String slug) {
         Author author = authorRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Author not found: " + slug));
-        return authorMapper.toDTO(author);
+        return authorMapper.toDTO(author, (int) articleRepository.countByAuthorId(author.getId()));
     }
 
     @Transactional(readOnly = true)
     public AuthorDTO getById(Long id) {
         Author author = authorRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Author not found: " + id));
-        return authorMapper.toDTO(author);
+        return authorMapper.toDTO(author, (int) articleRepository.countByAuthorId(id));
     }
 
     public AuthorDTO create(AuthorCreateDTO dto) {
