@@ -36,8 +36,8 @@ export class ArticleService {
     return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/search`, { params: { q, page, size } });
   }
 
-  getRelatedArticles(slug: string): Observable<ArticleList[]> {
-    return this.http.get<ArticleList[]>(`${this.api}/public/articles/${slug}/related`);
+  getRelatedArticles(slug: string): Observable<PageResponse<ArticleList>> {
+    return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/${slug}/related`);
   }
 
   // Admin endpoints
