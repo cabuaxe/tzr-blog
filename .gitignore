@@ -33,6 +33,7 @@ Thumbs.db
 # Environment
 .env
 .env.prod
+.env.staging
 *.env.local
 
 # H2
