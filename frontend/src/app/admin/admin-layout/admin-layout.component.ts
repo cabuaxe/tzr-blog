@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { environment } from '../../../environments/environment';
+import { TranslationTaskService } from '../../core/services/translation-task.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -20,6 +21,9 @@ import { environment } from '../../../environments/environment';
         <nav class="sidebar-nav">
           <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
             <span class="icon">📊</span><span class="label">{{ 'admin.dashboard' | translate }}</span>
+            @if (pendingTranslations() > 0) {
+              <span class="translation-badge">{{ pendingTranslations() }}</span>
+            }
           </a>
           <a routerLink="/admin/beitraege" routerLinkActive="active">
             <span class="icon">📝</span><span class="label">{{ 'admin.articles' | translate }}</span>
@@ -91,6 +95,10 @@ import { environment } from '../../../environments/environment';
       font-size: 0.6rem; font-weight: 700; background: #d4763e; color: #fff;
       padding: 0.1rem 0.35rem; border-radius: 8px; margin-left: auto;
     }
+    .translation-badge {
+      font-size: 0.6rem; font-weight: 700; background: #4a7fd4; color: #fff;
+      padding: 0.1rem 0.35rem; border-radius: 8px; margin-left: auto;
+    }
     .separator { height: 1px; background: rgba(255,255,255,0.08); margin: 0.8rem 0; }
     .main-area { flex: 1; margin-left: 240px; background: #f7f6f3; min-height: 100vh; transition: margin-left 0.2s; }
     .sidebar.collapsed ~ .main-area { margin-left: 60px; }
@@ -117,12 +125,18 @@ import { environment } from '../../../environments/environment';
 export class AdminLayoutComponent implements OnInit {
   auth = inject(AuthService);
   private http = inject(HttpClient);
+  private translationTaskService = inject(TranslationTaskService);
   sidebarCollapsed = signal(false);
   draftCount = signal(0);
+  pendingTranslations = signal(0);
 
   ngOnInit() {
     this.http.get<any>(`${environment.apiUrl}/admin/dashboard/stats`).subscribe({
       next: (stats) => this.draftCount.set(stats.draftArticles || 0),
+      error: () => {}
+    });
+    this.translationTaskService.getStats().subscribe({
+      next: (stats) => this.pendingTranslations.set(stats.pending || 0),
       error: () => {}
     });
   }

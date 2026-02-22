@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { TranslationTaskService } from '../../core/services/translation-task.service';
+import { TranslationTask } from '../../core/models/translation-task.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,6 +46,13 @@ import { environment } from '../../../environments/environment';
             <span class="stat-label">{{ 'admin.stats.newsletter' | translate }}</span>
           </div>
         </div>
+        <div class="stat-card">
+          <span class="stat-icon">🌐</span>
+          <div class="stat-info">
+            <span class="stat-value">{{ pendingTranslations() }}</span>
+            <span class="stat-label">{{ 'admin.stats.pendingTranslations' | translate }}</span>
+          </div>
+        </div>
       </div>
 
       <div class="recent-grid">
@@ -71,12 +80,25 @@ import { environment } from '../../../environments/environment';
             <p class="empty">{{ 'admin.noPublished' | translate }}</p>
           }
         </div>
+        <div class="recent-card">
+          <h2>{{ 'admin.stats.pendingTranslations' | translate }}</h2>
+          @for (task of pendingTasks(); track task.id) {
+            <div class="recent-item">
+              <span class="flag">{{ task.targetLang === 'PT' ? '🇵🇹' : '🇬🇧' }}</span>
+              <span class="item-title">{{ task.entityTitle }}</span>
+              <span class="task-type">{{ task.entityType }}</span>
+            </div>
+          }
+          @if (!pendingTasks().length) {
+            <p class="empty">{{ 'admin.noDrafts' | translate }}</p>
+          }
+        </div>
       </div>
     </div>
   `,
   styles: [`
     .dashboard h1 { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 700; color: #1e1e2e; margin-bottom: 1.5rem; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .stat-card {
       background: #fff; border-radius: 10px; padding: 1.2rem;
       border: 1px solid #e8e6e1;
@@ -90,7 +112,7 @@ import { environment } from '../../../environments/environment';
     .dot.draft { background: #b4b3af; }
     .dot.published { background: #3a9e7e; }
     .dot.archived { background: #d4763e; }
-    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .recent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
     .recent-card {
       background: #fff; border-radius: 10px; padding: 1.2rem; border: 1px solid #e8e6e1;
     }
@@ -103,6 +125,8 @@ import { environment } from '../../../environments/environment';
     .recent-item:hover { color: #3a9e7e; }
     .item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
     .empty { font-size: 0.8rem; color: #b4b3af; padding: 0.5rem 0; }
+    .task-type { font-size: 0.65rem; color: #787774; background: #f7f6f3; padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: auto; }
+    .flag { font-size: 0.85rem; }
     @media (max-width: 960px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } .recent-grid { grid-template-columns: 1fr; } }
   `]
@@ -110,10 +134,13 @@ import { environment } from '../../../environments/environment';
 export class DashboardComponent implements OnInit {
   private http = inject(HttpClient);
   private api = environment.apiUrl;
+  private translationTaskService = inject(TranslationTaskService);
 
   stats = signal<any>(null);
   recentDrafts = signal<any[]>([]);
   recentPublished = signal<any[]>([]);
+  pendingTranslations = signal(0);
+  pendingTasks = signal<TranslationTask[]>([]);
 
   ngOnInit() {
     this.http.get<any>(`${this.api}/admin/dashboard/stats`).subscribe(s => this.stats.set(s));
@@ -121,5 +148,7 @@ export class DashboardComponent implements OnInit {
       .subscribe(res => this.recentDrafts.set(res.content || []));
     this.http.get<any>(`${this.api}/admin/articles`, { params: { status: 'PUBLISHED', size: '5', sort: 'publishedDate,desc' } })
       .subscribe(res => this.recentPublished.set(res.content || []));
+    this.translationTaskService.getStats().subscribe(s => this.pendingTranslations.set(s.pending || 0));
+    this.translationTaskService.getPendingTasks().subscribe(tasks => this.pendingTasks.set(tasks.slice(0, 5)));
   }
 }
