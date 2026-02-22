@@ -1,27 +1,28 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthorService } from '../../../core/services/author.service';
 import { Author } from '../../../core/models/author.model';
 
 @Component({
   selector: 'app-admin-author-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
   template: `
     <div class="list-page">
       <div class="page-header">
-        <h1>Autoren</h1>
-        <a routerLink="/admin/autoren/neu" class="btn-primary">+ Neuer Autor</a>
+        <h1>{{ 'admin.authorList.title' | translate }}</h1>
+        <a routerLink="/admin/autoren/neu" class="btn-primary">+ {{ 'admin.authorList.newAuthor' | translate }}</a>
       </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
               <th></th>
-              <th>Name</th>
-              <th>E-Mail</th>
-              <th>Beiträge</th>
-              <th>Aktionen</th>
+              <th>{{ 'admin.authorList.name' | translate }}</th>
+              <th>{{ 'admin.authorList.email' | translate }}</th>
+              <th>{{ 'admin.authorList.articleCount' | translate }}</th>
+              <th>{{ 'admin.authorList.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -38,8 +39,8 @@ import { Author } from '../../../core/models/author.model';
                 <td>{{ a.email }}</td>
                 <td>{{ a.articleCount }}</td>
                 <td class="actions">
-                  <a [routerLink]="['/admin/autoren', a.id, 'bearbeiten']" class="action-btn">Bearbeiten</a>
-                  <button class="action-btn danger" (click)="deleteAuthor(a)">Löschen</button>
+                  <a [routerLink]="['/admin/autoren', a.id, 'bearbeiten']" class="action-btn">{{ 'admin.authorList.edit' | translate }}</a>
+                  <button class="action-btn danger" (click)="deleteAuthor(a)">{{ 'admin.authorList.delete' | translate }}</button>
                 </td>
               </tr>
             }
@@ -68,6 +69,7 @@ import { Author } from '../../../core/models/author.model';
 })
 export class AdminAuthorListComponent implements OnInit {
   private authorService = inject(AuthorService);
+  private translate = inject(TranslateService);
   authors = signal<Author[]>([]);
 
   ngOnInit() { this.loadAuthors(); }
@@ -78,13 +80,13 @@ export class AdminAuthorListComponent implements OnInit {
 
   deleteAuthor(a: Author) {
     if (a.articleCount > 0) {
-      alert(`Autor "${a.name}" kann nicht gelöscht werden, da noch ${a.articleCount} Beiträge zugeordnet sind.`);
+      alert(this.translate.instant('admin.authorList.cannotDelete', { name: a.name, count: a.articleCount }));
       return;
     }
-    if (confirm(`Autor "${a.name}" wirklich löschen?`)) {
+    if (confirm(this.translate.instant('admin.authorList.confirmDelete', { name: a.name }))) {
       this.authorService.deleteAuthor(a.id).subscribe({
         next: () => this.loadAuthors(),
-        error: (err) => alert(err.error?.message || 'Fehler beim Löschen')
+        error: (err) => alert(err.error?.message || this.translate.instant('admin.authorList.deleteError'))
       });
     }
   }

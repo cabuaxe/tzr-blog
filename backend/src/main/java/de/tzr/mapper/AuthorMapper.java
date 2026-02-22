@@ -2,21 +2,37 @@ package de.tzr.mapper;
 
 import de.tzr.dto.AuthorCreateDTO;
 import de.tzr.dto.AuthorDTO;
-import de.tzr.model.Author;
-import de.tzr.model.SlugUtil;
+import de.tzr.dto.AuthorTranslationDTO;
+import de.tzr.model.*;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class AuthorMapper {
 
     public AuthorDTO toDTO(Author a) {
-        return toDTO(a, 0);
+        return toDTO(a, 0, Language.DEFAULT);
     }
 
     public AuthorDTO toDTO(Author a, int articleCount) {
+        return toDTO(a, articleCount, Language.DEFAULT);
+    }
+
+    public AuthorDTO toDTO(Author a, int articleCount, Language lang) {
+        AuthorTranslation t = a.getTranslations().get(lang);
+        AuthorTranslation fallback = (t == null && lang != Language.DE) ? a.getTranslations().get(Language.DE) : null;
+
+        String bio = resolve(t != null ? t.getBio() : null, fallback != null ? fallback.getBio() : null, a.getBio());
+
+        List<AuthorTranslationDTO> translations = a.getTranslations().values().stream()
+            .map(tr -> new AuthorTranslationDTO(tr.getLanguage().name(), tr.getBio()))
+            .toList();
+
         return new AuthorDTO(
-            a.getId(), a.getName(), a.getSlug(), a.getBio(),
-            a.getEmail(), a.getAvatarUrl(), articleCount
+            a.getId(), a.getName(), a.getSlug(), bio,
+            a.getEmail(), a.getAvatarUrl(), articleCount,
+            translations
         );
     }
 
@@ -28,5 +44,11 @@ public class AuthorMapper {
             .email(dto.email())
             .avatarUrl(dto.avatarUrl())
             .build();
+    }
+
+    private String resolve(String primary, String fallback, String entityField) {
+        if (primary != null && !primary.isBlank()) return primary;
+        if (fallback != null && !fallback.isBlank()) return fallback;
+        return entityField;
     }
 }

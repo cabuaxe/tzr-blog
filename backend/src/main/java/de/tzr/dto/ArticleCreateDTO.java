@@ -23,5 +23,6 @@ public record ArticleCreateDTO(
     LocalDate publishedDate,
     Integer readingTimeMinutes,
     String metaTitle,
-    String metaDescription
+    String metaDescription,
+    List<ArticleTranslationDTO> translations
 ) {}

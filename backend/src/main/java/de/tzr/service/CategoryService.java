@@ -2,14 +2,14 @@ package de.tzr.service;
 
 import de.tzr.dto.CategoryCreateDTO;
 import de.tzr.dto.CategoryDTO;
+import de.tzr.dto.CategoryTranslationDTO;
 import de.tzr.exception.ResourceNotFoundException;
 import de.tzr.exception.SlugAlreadyExistsException;
 import de.tzr.mapper.CategoryMapper;
-import de.tzr.model.Category;
-import de.tzr.model.CategoryType;
-import de.tzr.model.SlugUtil;
+import de.tzr.model.*;
 import de.tzr.repository.ArticleRepository;
 import de.tzr.repository.CategoryRepository;
+import de.tzr.repository.CategoryTranslationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,20 +23,33 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ArticleRepository articleRepository;
+    private final CategoryTranslationRepository categoryTranslationRepository;
     private final CategoryMapper categoryMapper;
+    private final TranslationTaskService translationTaskService;
+    private final AutoTranslationService autoTranslationService;
 
     @Transactional(readOnly = true)
     public List<CategoryDTO> getAll() {
+        return getAll(Language.DEFAULT);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryDTO> getAll(Language lang) {
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-            .map(c -> categoryMapper.toDTO(c, (int) articleRepository.countByCategoryId(c.getId())))
+            .map(c -> categoryMapper.toDTO(c, (int) articleRepository.countByCategoryId(c.getId()), lang))
             .toList();
     }
 
     @Transactional(readOnly = true)
     public CategoryDTO getBySlug(String slug) {
+        return getBySlug(slug, Language.DEFAULT);
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryDTO getBySlug(String slug, Language lang) {
         Category category = categoryRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + slug));
-        return categoryMapper.toDTO(category, (int) articleRepository.countByCategoryId(category.getId()));
+        return categoryMapper.toDTO(category, (int) articleRepository.countByCategoryId(category.getId()), lang);
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +66,11 @@ public class CategoryService {
         }
         Category category = categoryMapper.toEntity(dto);
         category.setSlug(slug);
-        return categoryMapper.toDTO(categoryRepository.save(category));
+        category = categoryRepository.save(category);
+        saveTranslations(category, dto.translations());
+        translationTaskService.createTasksForEntity(TranslationTaskEntityType.CATEGORY, category.getId());
+        autoTranslationService.translateCategory(category.getId(), Language.DEFAULT);
+        return categoryMapper.toDTO(category);
     }
 
     public CategoryDTO update(Long id, CategoryCreateDTO dto) {
@@ -75,7 +92,10 @@ public class CategoryService {
         category.setType(CategoryType.valueOf(dto.type()));
         if (dto.sortOrder() != null) category.setSortOrder(dto.sortOrder());
 
-        return categoryMapper.toDTO(categoryRepository.save(category));
+        category = categoryRepository.save(category);
+        saveTranslations(category, dto.translations());
+        autoTranslationService.translateCategory(category.getId(), Language.DEFAULT);
+        return categoryMapper.toDTO(category);
     }
 
     public void delete(Long id) {
@@ -84,7 +104,7 @@ public class CategoryService {
         long count = articleRepository.countByCategoryId(id);
         if (count > 0) {
             throw new IllegalStateException(
-                "Kategorie kann nicht gel\u00f6scht werden: Es existieren noch " + count + " Beitr\u00e4ge in dieser Kategorie.");
+                "Kategorie kann nicht gelöscht werden: Es existieren noch " + count + " Beiträge in dieser Kategorie.");
         }
         categoryRepository.delete(category);
     }
@@ -95,6 +115,25 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
             category.setSortOrder(i);
             categoryRepository.save(category);
+        }
+    }
+
+    private void saveTranslations(Category category, List<CategoryTranslationDTO> translations) {
+        if (translations == null) return;
+        for (CategoryTranslationDTO dto : translations) {
+            Language lang = Language.valueOf(dto.language());
+            CategoryTranslation t = category.getTranslations().get(lang);
+            if (t == null) {
+                t = CategoryTranslation.builder()
+                    .category(category)
+                    .language(lang)
+                    .build();
+            }
+            t.setName(dto.name());
+            t.setDisplayName(dto.displayName());
+            t.setDescription(dto.description());
+            category.getTranslations().put(lang, t);
+            categoryTranslationRepository.save(t);
         }
     }
 }

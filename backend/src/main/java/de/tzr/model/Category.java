@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "categories")
@@ -44,6 +46,11 @@ public class Category {
 
     @Builder.Default
     private Integer sortOrder = 0;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKey(name = "language")
+    @Builder.Default
+    private Map<Language, CategoryTranslation> translations = new HashMap<>();
 
     @OneToMany(mappedBy = "category")
     @JsonIgnore

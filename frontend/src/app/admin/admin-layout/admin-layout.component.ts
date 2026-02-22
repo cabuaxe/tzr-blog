@@ -1,13 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, LanguageSwitcherComponent],
   template: `
     <div class="admin-shell">
       <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
@@ -17,29 +19,29 @@ import { environment } from '../../../environments/environment';
         </div>
         <nav class="sidebar-nav">
           <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            <span class="icon">📊</span><span class="label">Dashboard</span>
+            <span class="icon">📊</span><span class="label">{{ 'admin.dashboard' | translate }}</span>
           </a>
           <a routerLink="/admin/beitraege" routerLinkActive="active">
-            <span class="icon">📝</span><span class="label">Beiträge</span>
+            <span class="icon">📝</span><span class="label">{{ 'admin.articles' | translate }}</span>
             @if (draftCount() > 0) {
               <span class="draft-badge">{{ draftCount() }}</span>
             }
           </a>
           <a routerLink="/admin/kategorien" routerLinkActive="active">
-            <span class="icon">📂</span><span class="label">Kategorien</span>
+            <span class="icon">📂</span><span class="label">{{ 'admin.categories' | translate }}</span>
           </a>
           <a routerLink="/admin/autoren" routerLinkActive="active">
-            <span class="icon">👤</span><span class="label">Autoren</span>
+            <span class="icon">👤</span><span class="label">{{ 'admin.authors' | translate }}</span>
           </a>
           <a routerLink="/admin/tags" routerLinkActive="active">
-            <span class="icon">🏷️</span><span class="label">Tags</span>
+            <span class="icon">🏷️</span><span class="label">{{ 'admin.tags' | translate }}</span>
           </a>
           <div class="separator"></div>
           <a href="/" target="_blank" class="external">
-            <span class="icon">↗</span><span class="label">Zum Blog</span>
+            <span class="icon">↗</span><span class="label">{{ 'admin.viewBlog' | translate }}</span>
           </a>
           <button class="nav-btn" (click)="logout()">
-            <span class="icon">🚪</span><span class="label">Abmelden</span>
+            <span class="icon">🚪</span><span class="label">{{ 'admin.logout' | translate }}</span>
           </button>
         </nav>
       </aside>
@@ -47,6 +49,7 @@ import { environment } from '../../../environments/environment';
         <header class="topbar">
           <button class="toggle-btn" (click)="toggleSidebar()">☰</button>
           <div class="topbar-right">
+            <app-language-switcher />
             @if (auth.currentUser()) {
               <span class="user-name">{{ auth.currentUser()!.displayName }}</span>
               <span class="role-badge">{{ auth.currentUser()!.role }}</span>

@@ -1,31 +1,32 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslateModule],
   template: `
     <div class="login-page">
       <div class="login-card">
         <h1 class="brand">TZR</h1>
-        <p class="subtitle">Admin-Bereich</p>
+        <p class="subtitle">{{ 'admin.adminArea' | translate }}</p>
         <form (ngSubmit)="onLogin()">
           <div class="field">
-            <label for="username">Benutzername</label>
+            <label for="username">{{ 'admin.username' | translate }}</label>
             <input id="username" type="text" [(ngModel)]="username" name="username" required autofocus />
           </div>
           <div class="field">
-            <label for="password">Passwort</label>
+            <label for="password">{{ 'admin.password' | translate }}</label>
             <input id="password" type="password" [(ngModel)]="password" name="password" required />
           </div>
           @if (error()) {
             <p class="error">{{ error() }}</p>
           }
           <button type="submit" class="login-btn" [disabled]="loading()">
-            {{ loading() ? 'Anmelden…' : 'Anmelden' }}
+            {{ loading() ? ('admin.loggingIn' | translate) : ('admin.login' | translate) }}
           </button>
         </form>
       </div>
@@ -61,6 +62,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   username = '';
   password = '';
@@ -75,7 +77,7 @@ export class LoginComponent {
         this.router.navigate(['/admin']);
       },
       error: () => {
-        this.error.set('Benutzername oder Passwort ungültig.');
+        this.error.set(this.translate.instant('admin.loginError'));
         this.loading.set(false);
       }
     });

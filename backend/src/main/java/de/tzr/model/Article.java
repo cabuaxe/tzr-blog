@@ -5,8 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "articles")
@@ -50,6 +49,11 @@ public class Article {
     )
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKey(name = "language")
+    @Builder.Default
+    private Map<Language, ArticleTranslation> translations = new HashMap<>();
 
     private String cardEmoji;
     private String coverImageUrl;

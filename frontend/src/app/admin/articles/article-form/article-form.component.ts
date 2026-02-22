@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuillModule, QuillEditorComponent } from 'ngx-quill';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ArticleService } from '../../../core/services/article.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { AuthorService } from '../../../core/services/author.service';
@@ -14,39 +15,39 @@ import { Tag } from '../../../core/models/tag.model';
 @Component({
   selector: 'app-article-form',
   standalone: true,
-  imports: [FormsModule, RouterLink, QuillModule],
+  imports: [FormsModule, RouterLink, QuillModule, TranslateModule],
   template: `
     <div class="form-page">
       <div class="form-header">
-        <h1>{{ isEdit() ? 'Beitrag bearbeiten' : 'Neuer Beitrag' }}</h1>
+        <h1>{{ (isEdit() ? 'admin.articleForm.editArticle' : 'admin.articleForm.newArticle') | translate }}</h1>
         <div class="form-actions">
-          <a routerLink="/admin/beitraege" class="btn-secondary">Abbrechen</a>
-          <button class="btn-primary" (click)="save('DRAFT')">Als Entwurf speichern</button>
-          <button class="btn-accent" (click)="save('PUBLISHED')">Veröffentlichen</button>
+          <a routerLink="/admin/beitraege" class="btn-secondary">{{ 'admin.articleForm.cancel' | translate }}</a>
+          <button class="btn-primary" (click)="save('DRAFT')">{{ 'admin.articleForm.saveDraft' | translate }}</button>
+          <button class="btn-accent" (click)="save('PUBLISHED')">{{ 'admin.articleForm.publish' | translate }}</button>
         </div>
       </div>
 
       <div class="form-grid">
         <div class="form-main">
           <div class="field">
-            <label>Titel</label>
-            <input type="text" [(ngModel)]="form.title" (ngModelChange)="generateSlug()" placeholder="Titel des Beitrags" />
+            <label>{{ 'admin.articleForm.title' | translate }}</label>
+            <input type="text" [(ngModel)]="form.title" (ngModelChange)="generateSlug()" [placeholder]="'admin.articleForm.titlePlaceholder' | translate" />
           </div>
           <div class="field">
-            <label>Slug</label>
-            <input type="text" [(ngModel)]="form.slug" placeholder="url-slug" />
+            <label>{{ 'admin.articleForm.slug' | translate }}</label>
+            <input type="text" [(ngModel)]="form.slug" [placeholder]="'admin.articleForm.slugPlaceholder' | translate" />
           </div>
           <div class="field">
-            <label>Vorschautext (Excerpt)</label>
-            <textarea [(ngModel)]="form.excerpt" rows="3" placeholder="Kurzbeschreibung für Karten und Vorschau…"></textarea>
+            <label>{{ 'admin.articleForm.excerpt' | translate }}</label>
+            <textarea [(ngModel)]="form.excerpt" rows="3" [placeholder]="'admin.articleForm.excerptPlaceholder' | translate"></textarea>
           </div>
           <div class="field editor-field">
             <div class="editor-header">
-              <label>Inhalt</label>
+              <label>{{ 'admin.articleForm.body' | translate }}</label>
               <div class="editor-toolbar-extra">
-                <span class="reading-time-badge">~{{ estimatedReadingTime() }} Min. Lesezeit</span>
+                <span class="reading-time-badge">{{ 'admin.articleForm.readingTimeBadge' | translate:{min: estimatedReadingTime()} }}</span>
                 <button type="button" class="source-toggle" (click)="toggleHtmlSource()">
-                  {{ htmlSourceMode() ? 'Editor' : '&lt;/&gt; HTML' }}
+                  {{ htmlSourceMode() ? ('admin.articleForm.visualMode' | translate) : ('admin.articleForm.sourceMode' | translate) }}
                 </button>
               </div>
             </div>
@@ -56,7 +57,7 @@ import { Tag } from '../../../core/models/tag.model';
                 [(ngModel)]="form.body"
                 [modules]="quillModules"
                 [styles]="{ minHeight: '400px' }"
-                placeholder="Artikel-Inhalt verfassen…"
+                [placeholder]="'admin.articleForm.bodyPlaceholder' | translate"
                 format="html"
                 (onContentChanged)="onContentChanged()"
               ></quill-editor>
@@ -65,7 +66,7 @@ import { Tag } from '../../../core/models/tag.model';
                 class="html-source"
                 [(ngModel)]="form.body"
                 rows="20"
-                placeholder="HTML-Quellcode…"
+                [placeholder]="'admin.articleForm.htmlPlaceholder' | translate"
                 (ngModelChange)="onContentChanged()"
               ></textarea>
             }
@@ -74,21 +75,21 @@ import { Tag } from '../../../core/models/tag.model';
 
         <div class="form-sidebar">
           <div class="sidebar-section">
-            <h3>Einstellungen</h3>
+            <h3>{{ 'admin.articleForm.settings' | translate }}</h3>
             <div class="field">
-              <label>Status</label>
+              <label>{{ 'admin.articleForm.status' | translate }}</label>
               <select [(ngModel)]="form.status">
-                <option value="DRAFT">Entwurf</option>
-                <option value="PUBLISHED">Veröffentlicht</option>
-                <option value="ARCHIVED">Archiviert</option>
+                <option value="DRAFT">{{ 'admin.articleForm.draft' | translate }}</option>
+                <option value="PUBLISHED">{{ 'admin.articleForm.publishedStatus' | translate }}</option>
+                <option value="ARCHIVED">{{ 'admin.articleForm.archived' | translate }}</option>
               </select>
             </div>
             <div class="field">
-              <label>Veröffentlichungsdatum</label>
+              <label>{{ 'admin.articleForm.publishDate' | translate }}</label>
               <input type="date" [(ngModel)]="form.publishedDate" />
             </div>
             <div class="field">
-              <label>Kategorie</label>
+              <label>{{ 'admin.articleForm.category' | translate }}</label>
               <select [(ngModel)]="form.categoryId">
                 @for (cat of categories(); track cat.id) {
                   <option [value]="cat.id">{{ cat.emoji }} {{ cat.displayName }}</option>
@@ -96,7 +97,7 @@ import { Tag } from '../../../core/models/tag.model';
               </select>
             </div>
             <div class="field">
-              <label>Autor</label>
+              <label>{{ 'admin.articleForm.author' | translate }}</label>
               <select [(ngModel)]="form.authorId">
                 @for (a of authors(); track a.id) {
                   <option [value]="a.id">{{ a.name }}</option>
@@ -106,7 +107,7 @@ import { Tag } from '../../../core/models/tag.model';
           </div>
 
           <div class="sidebar-section">
-            <h3>Tags</h3>
+            <h3>{{ 'admin.articleForm.tags' | translate }}</h3>
             <div class="tags-select">
               @for (tag of allTags(); track tag.id) {
                 <label class="tag-option">
@@ -116,43 +117,43 @@ import { Tag } from '../../../core/models/tag.model';
               }
             </div>
             <div class="inline-tag-create">
-              <input type="text" [(ngModel)]="newTagName" placeholder="Neuer Tag…" (keydown.enter)="createTag()" />
+              <input type="text" [(ngModel)]="newTagName" [placeholder]="'admin.articleForm.addTag' | translate" (keydown.enter)="createTag()" />
               <button type="button" (click)="createTag()" [disabled]="!newTagName.trim()">+</button>
             </div>
           </div>
 
           <div class="sidebar-section">
-            <h3>Darstellung</h3>
+            <h3>{{ 'admin.articleForm.display' | translate }}</h3>
             <div class="field">
-              <label>Karten-Emoji</label>
+              <label>{{ 'admin.articleForm.emoji' | translate }}</label>
               <input type="text" [(ngModel)]="form.cardEmoji" placeholder="🎯" />
             </div>
             <div class="field">
-              <label>Cover-Bild URL</label>
+              <label>{{ 'admin.articleForm.coverImage' | translate }}</label>
               <input type="text" [(ngModel)]="form.coverImageUrl" placeholder="https://…" />
             </div>
             @if (form.coverImageUrl) {
-              <img [src]="form.coverImageUrl + '?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop'" class="cover-preview" alt="Cover-Vorschau" />
+              <img [src]="form.coverImageUrl + '?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop'" class="cover-preview" alt="Cover" />
             }
             <div class="field">
-              <label>Bildnachweis</label>
-              <input type="text" [(ngModel)]="form.coverImageCredit" placeholder="Fotograf:in" />
+              <label>{{ 'admin.articleForm.coverImageCredit' | translate }}</label>
+              <input type="text" [(ngModel)]="form.coverImageCredit" [placeholder]="'admin.articleForm.coverImageCreditPlaceholder' | translate" />
             </div>
             <div class="toggle-row">
-              <label><input type="checkbox" [(ngModel)]="form.academic" /> Fachartikel</label>
-              <label><input type="checkbox" [(ngModel)]="form.featured" /> Featured</label>
+              <label><input type="checkbox" [(ngModel)]="form.academic" /> {{ 'admin.articleForm.academic' | translate }}</label>
+              <label><input type="checkbox" [(ngModel)]="form.featured" /> {{ 'admin.articleForm.featured' | translate }}</label>
             </div>
           </div>
 
           <div class="sidebar-section">
-            <h3>SEO</h3>
+            <h3>{{ 'admin.articleForm.seo' | translate }}</h3>
             <div class="field">
-              <label>Meta-Titel</label>
-              <input type="text" [(ngModel)]="form.metaTitle" placeholder="SEO-Titel" />
+              <label>{{ 'admin.articleForm.metaTitle' | translate }}</label>
+              <input type="text" [(ngModel)]="form.metaTitle" [placeholder]="'admin.articleForm.metaTitlePlaceholder' | translate" />
             </div>
             <div class="field">
-              <label>Meta-Beschreibung</label>
-              <textarea [(ngModel)]="form.metaDescription" rows="2" placeholder="SEO-Beschreibung"></textarea>
+              <label>{{ 'admin.articleForm.metaDescription' | translate }}</label>
+              <textarea [(ngModel)]="form.metaDescription" rows="2" [placeholder]="'admin.articleForm.metaDescriptionPlaceholder' | translate"></textarea>
             </div>
           </div>
         </div>
@@ -226,6 +227,7 @@ export class ArticleFormComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private authorService = inject(AuthorService);
   private tagService = inject(TagService);
+  private translate = inject(TranslateService);
 
   @ViewChild('quillEditor') quillEditor!: QuillEditorComponent;
 
@@ -328,7 +330,7 @@ export class ArticleFormComponent implements OnInit {
         this.form.tagIds = [...(this.form.tagIds || []), tag.id];
         this.newTagName = '';
       },
-      error: (err) => alert('Fehler: ' + (err.error?.message || err.message))
+      error: (err) => alert(this.translate.instant('admin.articleForm.tagError') + ': ' + (err.error?.message || err.message))
     });
   }
 
@@ -347,7 +349,7 @@ export class ArticleFormComponent implements OnInit {
         this.formDirty = false;
         this.router.navigate(['/admin/beitraege']);
       },
-      error: (err) => alert('Fehler beim Speichern: ' + (err.error?.message || err.message))
+      error: (err) => alert(this.translate.instant('admin.articleForm.saveError') + ': ' + (err.error?.message || err.message))
     });
   }
 }

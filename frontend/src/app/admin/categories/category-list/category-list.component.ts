@@ -1,28 +1,29 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CategoryService } from '../../../core/services/category.service';
 import { Category } from '../../../core/models/category.model';
 
 @Component({
   selector: 'app-admin-category-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
   template: `
     <div class="list-page">
       <div class="page-header">
-        <h1>Kategorien</h1>
-        <a routerLink="/admin/kategorien/neu" class="btn-primary">+ Neue Kategorie</a>
+        <h1>{{ 'admin.categoryList.title' | translate }}</h1>
+        <a routerLink="/admin/kategorien/neu" class="btn-primary">+ {{ 'admin.categoryList.newCategory' | translate }}</a>
       </div>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>Emoji</th>
-              <th>Name</th>
-              <th>Typ</th>
-              <th>Beiträge</th>
-              <th>Reihenfolge</th>
-              <th>Aktionen</th>
+              <th>{{ 'admin.categoryList.emoji' | translate }}</th>
+              <th>{{ 'admin.categoryList.name' | translate }}</th>
+              <th>{{ 'admin.categoryList.type' | translate }}</th>
+              <th>{{ 'admin.categoryList.articleCount' | translate }}</th>
+              <th>{{ 'admin.categoryList.sortOrder' | translate }}</th>
+              <th>{{ 'admin.categoryList.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -30,12 +31,12 @@ import { Category } from '../../../core/models/category.model';
               <tr>
                 <td>{{ cat.emoji }}</td>
                 <td><span [style.color]="cat.color" class="cat-name">{{ cat.displayName }}</span></td>
-                <td><span class="type-badge" [class]="cat.type.toLowerCase()">{{ cat.type === 'BILDUNGSBEREICH' ? 'Bildungsbereich' : 'Querschnitt' }}</span></td>
+                <td><span class="type-badge" [class]="cat.type.toLowerCase()">{{ cat.type === 'BILDUNGSBEREICH' ? ('admin.categoryList.educational' | translate) : ('admin.categoryList.crossCutting' | translate) }}</span></td>
                 <td>{{ cat.articleCount }}</td>
                 <td>{{ cat.sortOrder }}</td>
                 <td class="actions">
-                  <a [routerLink]="['/admin/kategorien', cat.id, 'bearbeiten']" class="action-btn">Bearbeiten</a>
-                  <button class="action-btn danger" (click)="deleteCategory(cat)">Löschen</button>
+                  <a [routerLink]="['/admin/kategorien', cat.id, 'bearbeiten']" class="action-btn">{{ 'admin.categoryList.edit' | translate }}</a>
+                  <button class="action-btn danger" (click)="deleteCategory(cat)">{{ 'admin.categoryList.delete' | translate }}</button>
                 </td>
               </tr>
             }
@@ -68,6 +69,7 @@ import { Category } from '../../../core/models/category.model';
 })
 export class AdminCategoryListComponent implements OnInit {
   private categoryService = inject(CategoryService);
+  private translate = inject(TranslateService);
   categories = signal<Category[]>([]);
 
   ngOnInit() {
@@ -80,13 +82,13 @@ export class AdminCategoryListComponent implements OnInit {
 
   deleteCategory(cat: Category) {
     if (cat.articleCount > 0) {
-      alert(`Kategorie "${cat.displayName}" kann nicht gelöscht werden, da noch ${cat.articleCount} Beiträge zugeordnet sind.`);
+      alert(this.translate.instant('admin.categoryList.cannotDelete', { name: cat.displayName, count: cat.articleCount }));
       return;
     }
-    if (confirm(`Kategorie "${cat.displayName}" wirklich löschen?`)) {
+    if (confirm(this.translate.instant('admin.categoryList.confirmDelete', { name: cat.displayName }))) {
       this.categoryService.deleteCategory(cat.id).subscribe({
         next: () => this.loadCategories(),
-        error: (err) => alert(err.error?.message || 'Fehler beim Löschen')
+        error: (err) => alert(err.error?.message || this.translate.instant('admin.categoryList.deleteError'))
       });
     }
   }

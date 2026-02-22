@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ArticleService } from '../../../core/services/article.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { ArticleList } from '../../../core/models/article.model';
@@ -12,46 +13,46 @@ import { DateDePipe } from '../../../shared/pipes/date-de.pipe';
 @Component({
   selector: 'app-article-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, PaginationComponent, DateDePipe],
+  imports: [RouterLink, FormsModule, PaginationComponent, DateDePipe, TranslateModule],
   template: `
     <div class="list-page">
       <div class="page-header">
-        <h1>Beiträge</h1>
-        <a routerLink="/admin/beitraege/neu" class="btn-primary">+ Neuer Beitrag</a>
+        <h1>{{ 'admin.articleList.title' | translate }}</h1>
+        <a routerLink="/admin/beitraege/neu" class="btn-primary">+ {{ 'admin.articleList.newArticle' | translate }}</a>
       </div>
 
       <div class="toolbar">
-        <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()" placeholder="Suchen…" class="search-input" />
+        <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()" [placeholder]="'admin.articleList.search' | translate" class="search-input" />
         <select [(ngModel)]="filterStatus" (ngModelChange)="loadArticles()">
-          <option value="">Alle Status</option>
-          <option value="DRAFT">Entwurf</option>
-          <option value="PUBLISHED">Veröffentlicht</option>
-          <option value="ARCHIVED">Archiviert</option>
+          <option value="">{{ 'admin.articleList.allStatuses' | translate }}</option>
+          <option value="DRAFT">{{ 'admin.articleList.draft' | translate }}</option>
+          <option value="PUBLISHED">{{ 'admin.articleList.published' | translate }}</option>
+          <option value="ARCHIVED">{{ 'admin.articleList.archived' | translate }}</option>
         </select>
         <select [(ngModel)]="filterCategory" (ngModelChange)="loadArticles()">
-          <option value="">Alle Kategorien</option>
+          <option value="">{{ 'admin.articleList.allCategories' | translate }}</option>
           @for (cat of categories(); track cat.id) {
             <option [value]="cat.slug">{{ cat.displayName }}</option>
           }
         </select>
         <label class="checkbox-label">
           <input type="checkbox" [(ngModel)]="filterAcademic" (ngModelChange)="loadArticles()" />
-          Fachartikel
+          {{ 'admin.articleList.academicOnly' | translate }}
         </label>
       </div>
 
       @if (selectedIds.size > 0) {
         <div class="bulk-bar">
-          <span class="bulk-count">{{ selectedIds.size }} {{ selectedIds.size === 1 ? 'Beitrag' : 'Beiträge' }} ausgewählt</span>
+          <span class="bulk-count">{{ (selectedIds.size === 1 ? 'admin.articleList.selectedOne' : 'admin.articleList.selectedMany') | translate:{count: selectedIds.size} }}</span>
           <div class="bulk-actions">
             <select class="bulk-select" (change)="bulkChangeStatus($event)">
-              <option value="" disabled selected>Status ändern</option>
-              <option value="DRAFT">Entwurf</option>
-              <option value="PUBLISHED">Veröffentlicht</option>
-              <option value="ARCHIVED">Archiviert</option>
+              <option value="" disabled selected>{{ 'admin.articleList.bulkStatus' | translate }}</option>
+              <option value="DRAFT">{{ 'admin.articleList.draft' | translate }}</option>
+              <option value="PUBLISHED">{{ 'admin.articleList.published' | translate }}</option>
+              <option value="ARCHIVED">{{ 'admin.articleList.archived' | translate }}</option>
             </select>
-            <button class="bulk-btn danger" (click)="bulkDelete()">Löschen</button>
-            <button class="bulk-btn cancel" (click)="clearSelection()">Aufheben</button>
+            <button class="bulk-btn danger" (click)="bulkDelete()">{{ 'admin.articleList.bulkDelete' | translate }}</button>
+            <button class="bulk-btn cancel" (click)="clearSelection()">{{ 'admin.articleList.bulkCancel' | translate }}</button>
           </div>
         </div>
       }
@@ -61,12 +62,12 @@ import { DateDePipe } from '../../../shared/pipes/date-de.pipe';
           <thead>
             <tr>
               <th class="th-check"><input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)" /></th>
-              <th>Status</th>
-              <th>Titel</th>
-              <th>Kategorie</th>
-              <th>Autor</th>
-              <th>Datum</th>
-              <th>Aktionen</th>
+              <th>{{ 'admin.articleList.status' | translate }}</th>
+              <th>{{ 'admin.articleList.titleCol' | translate }}</th>
+              <th>{{ 'admin.articleList.category' | translate }}</th>
+              <th>{{ 'admin.articleList.authorCol' | translate }}</th>
+              <th>{{ 'admin.articleList.date' | translate }}</th>
+              <th>{{ 'admin.articleList.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -83,8 +84,8 @@ import { DateDePipe } from '../../../shared/pipes/date-de.pipe';
                 <td>{{ a.author.name }}</td>
                 <td>{{ a.publishedDate | dateDe }}</td>
                 <td class="actions">
-                  <a [routerLink]="['/admin/beitraege', a.id, 'bearbeiten']" class="action-btn">Bearbeiten</a>
-                  <button class="action-btn danger" (click)="deleteArticle(a.id)">Löschen</button>
+                  <a [routerLink]="['/admin/beitraege', a.id, 'bearbeiten']" class="action-btn">{{ 'admin.articleList.edit' | translate }}</a>
+                  <button class="action-btn danger" (click)="deleteArticle(a.id)">{{ 'admin.articleList.delete' | translate }}</button>
                 </td>
               </tr>
             }
@@ -162,6 +163,7 @@ import { DateDePipe } from '../../../shared/pipes/date-de.pipe';
 export class ArticleListComponent implements OnInit {
   private articleService = inject(ArticleService);
   private categoryService = inject(CategoryService);
+  private translate = inject(TranslateService);
 
   articles = signal<ArticleList[]>([]);
   categories = signal<Category[]>([]);
@@ -206,7 +208,7 @@ export class ArticleListComponent implements OnInit {
   }
 
   deleteArticle(id: number) {
-    if (confirm('Diesen Beitrag wirklich löschen?')) {
+    if (confirm(this.translate.instant('admin.articleList.confirmDelete'))) {
       this.articleService.deleteArticle(id).subscribe(() => {
         this.selectedIds.delete(id);
         this.loadArticles();
@@ -245,7 +247,8 @@ export class ArticleListComponent implements OnInit {
     const status = select.value;
     if (!status || this.selectedIds.size === 0) return;
     const count = this.selectedIds.size;
-    if (!confirm(`Status von ${count} ${count === 1 ? 'Beitrag' : 'Beiträgen'} ändern?`)) {
+    const key = count === 1 ? 'admin.articleList.confirmBulkStatusOne' : 'admin.articleList.confirmBulkStatusMany';
+    if (!confirm(this.translate.instant(key, { count }))) {
       select.value = '';
       return;
     }
@@ -260,7 +263,8 @@ export class ArticleListComponent implements OnInit {
   bulkDelete() {
     const count = this.selectedIds.size;
     if (count === 0) return;
-    if (!confirm(`${count} ${count === 1 ? 'Beitrag' : 'Beiträge'} wirklich löschen?`)) return;
+    const key = count === 1 ? 'admin.articleList.confirmBulkDeleteOne' : 'admin.articleList.confirmBulkDeleteMany';
+    if (!confirm(this.translate.instant(key, { count }))) return;
     const ids = Array.from(this.selectedIds);
     forkJoin(ids.map(id => this.articleService.deleteArticle(id))).subscribe({
       next: () => { this.clearSelection(); this.loadArticles(); },

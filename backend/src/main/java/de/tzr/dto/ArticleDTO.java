@@ -11,5 +11,6 @@ public record ArticleDTO(
     String status, Boolean academic, Boolean featured,
     LocalDate publishedDate, Integer readingTimeMinutes,
     String metaTitle, String metaDescription,
-    LocalDateTime createdAt, LocalDateTime updatedAt
+    LocalDateTime createdAt, LocalDateTime updatedAt,
+    List<ArticleTranslationDTO> translations
 ) {}

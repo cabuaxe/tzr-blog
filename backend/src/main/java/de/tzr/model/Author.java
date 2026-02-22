@@ -6,7 +6,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "authors")
@@ -33,6 +35,11 @@ public class Author {
 
     private String email;
     private String avatarUrl;
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKey(name = "language")
+    @Builder.Default
+    private Map<Language, AuthorTranslation> translations = new HashMap<>();
 
     @OneToMany(mappedBy = "author")
     @JsonIgnore

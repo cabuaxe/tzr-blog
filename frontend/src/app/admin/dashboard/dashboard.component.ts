@@ -1,53 +1,54 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
   template: `
     <div class="dashboard">
-      <h1>Dashboard</h1>
+      <h1>{{ 'admin.dashboard' | translate }}</h1>
       <div class="stats-grid">
         <div class="stat-card">
           <span class="stat-icon">📝</span>
           <div class="stat-info">
             <span class="stat-value">{{ stats()?.totalArticles || 0 }}</span>
-            <span class="stat-label">Beiträge</span>
+            <span class="stat-label">{{ 'admin.stats.articles' | translate }}</span>
           </div>
           <div class="stat-detail">
-            <span class="dot draft"></span> {{ stats()?.draftArticles || 0 }} Entwürfe
-            <span class="dot published"></span> {{ stats()?.publishedArticles || 0 }} Veröffentlicht
+            <span class="dot draft"></span> {{ stats()?.draftArticles || 0 }} {{ 'admin.stats.drafts' | translate }}
+            <span class="dot published"></span> {{ stats()?.publishedArticles || 0 }} {{ 'admin.stats.published' | translate }}
           </div>
         </div>
         <div class="stat-card">
           <span class="stat-icon">📂</span>
           <div class="stat-info">
             <span class="stat-value">{{ stats()?.categories || 0 }}</span>
-            <span class="stat-label">Kategorien</span>
+            <span class="stat-label">{{ 'admin.stats.categories' | translate }}</span>
           </div>
         </div>
         <div class="stat-card">
           <span class="stat-icon">👤</span>
           <div class="stat-info">
             <span class="stat-value">{{ stats()?.authors || 0 }}</span>
-            <span class="stat-label">Autoren</span>
+            <span class="stat-label">{{ 'admin.stats.authors' | translate }}</span>
           </div>
         </div>
         <div class="stat-card">
           <span class="stat-icon">📬</span>
           <div class="stat-info">
             <span class="stat-value">{{ stats()?.subscribers || 0 }}</span>
-            <span class="stat-label">Newsletter</span>
+            <span class="stat-label">{{ 'admin.stats.newsletter' | translate }}</span>
           </div>
         </div>
       </div>
 
       <div class="recent-grid">
         <div class="recent-card">
-          <h2>Neueste Entwürfe</h2>
+          <h2>{{ 'admin.recentDrafts' | translate }}</h2>
           @for (a of recentDrafts(); track a.id) {
             <a [routerLink]="['/admin/beitraege', a.id, 'bearbeiten']" class="recent-item">
               <span class="dot draft"></span>
@@ -55,11 +56,11 @@ import { environment } from '../../../environments/environment';
             </a>
           }
           @if (!recentDrafts().length) {
-            <p class="empty">Keine Entwürfe vorhanden.</p>
+            <p class="empty">{{ 'admin.noDrafts' | translate }}</p>
           }
         </div>
         <div class="recent-card">
-          <h2>Zuletzt veröffentlicht</h2>
+          <h2>{{ 'admin.recentPublished' | translate }}</h2>
           @for (a of recentPublished(); track a.id) {
             <a [routerLink]="['/admin/beitraege', a.id, 'bearbeiten']" class="recent-item">
               <span class="dot published"></span>
@@ -67,7 +68,7 @@ import { environment } from '../../../environments/environment';
             </a>
           }
           @if (!recentPublished().length) {
-            <p class="empty">Keine veröffentlichten Beiträge.</p>
+            <p class="empty">{{ 'admin.noPublished' | translate }}</p>
           }
         </div>
       </div>

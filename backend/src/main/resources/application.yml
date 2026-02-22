@@ -22,3 +22,13 @@ newsletter:
   from: tzr@zuacaldeira.com
   from-name: "TZR — Frühkindliche Bildung"
   base-url: ${APP_BASE_URL:http://localhost:8080}
+
+translation:
+  auto-translate: ${AUTO_TRANSLATE:true}
+  deepl:
+    api-key: ${DEEPL_API_KEY:}
+    api-url: ${DEEPL_API_URL:https://api-free.deepl.com/v2/translate}
+  claude:
+    api-key: ${CLAUDE_API_KEY:}
+    api-url: ${CLAUDE_API_URL:https://api.anthropic.com/v1/messages}
+    model: ${CLAUDE_MODEL:claude-haiku-4-5-20251001}

@@ -26,75 +26,78 @@ public class ArticleService {
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
     private final TagRepository tagRepository;
+    private final ArticleTranslationRepository articleTranslationRepository;
     private final ArticleMapper articleMapper;
+    private final TranslationTaskService translationTaskService;
+    private final AutoTranslationService autoTranslationService;
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getAllPublished(Pageable pageable) {
-        return toPageResponse(articleRepository.findByStatus(ArticleStatus.PUBLISHED, pageable));
+    public PageResponse<ArticleListDTO> getAllPublished(Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.findByStatus(ArticleStatus.PUBLISHED, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public ArticleDTO getBySlug(String slug) {
+    public ArticleDTO getBySlug(String slug, Language lang) {
         Article article = articleRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Article not found: " + slug));
-        return articleMapper.toDTO(article);
+        return articleMapper.toDTO(article, lang);
     }
 
     @Transactional(readOnly = true)
-    public ArticleDTO getFeatured() {
+    public ArticleDTO getFeatured(Language lang) {
         Article article = articleRepository.findByFeaturedTrueAndStatus(ArticleStatus.PUBLISHED)
             .orElseThrow(() -> new ResourceNotFoundException("No featured article found"));
-        return articleMapper.toDTO(article);
+        return articleMapper.toDTO(article, lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> search(String query, Pageable pageable) {
-        return toPageResponse(articleRepository.search(ArticleStatus.PUBLISHED, query, pageable));
+    public PageResponse<ArticleListDTO> search(String query, Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.search(ArticleStatus.PUBLISHED, query, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getByCategory(String categorySlug, Pageable pageable) {
-        return toPageResponse(articleRepository.findByStatusAndCategorySlug(ArticleStatus.PUBLISHED, categorySlug, pageable));
+    public PageResponse<ArticleListDTO> getByCategory(String categorySlug, Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.findByStatusAndCategorySlug(ArticleStatus.PUBLISHED, categorySlug, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getByAuthor(String authorSlug, Pageable pageable) {
-        return toPageResponse(articleRepository.findByStatusAndAuthorSlug(ArticleStatus.PUBLISHED, authorSlug, pageable));
+    public PageResponse<ArticleListDTO> getByAuthor(String authorSlug, Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.findByStatusAndAuthorSlug(ArticleStatus.PUBLISHED, authorSlug, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getByTag(String tagSlug, Pageable pageable) {
-        return toPageResponse(articleRepository.findByStatusAndTagSlug(ArticleStatus.PUBLISHED, tagSlug, pageable));
+    public PageResponse<ArticleListDTO> getByTag(String tagSlug, Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.findByStatusAndTagSlug(ArticleStatus.PUBLISHED, tagSlug, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getAcademic(Pageable pageable) {
-        return toPageResponse(articleRepository.findByStatusAndAcademic(ArticleStatus.PUBLISHED, true, pageable));
+    public PageResponse<ArticleListDTO> getAcademic(Language lang, Pageable pageable) {
+        return toPageResponse(articleRepository.findByStatusAndAcademic(ArticleStatus.PUBLISHED, true, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getByCategoryType(String type, Pageable pageable) {
+    public PageResponse<ArticleListDTO> getByCategoryType(String type, Language lang, Pageable pageable) {
         CategoryType categoryType = CategoryType.valueOf(type);
-        return toPageResponse(articleRepository.findByStatusAndCategoryType(ArticleStatus.PUBLISHED, categoryType, pageable));
+        return toPageResponse(articleRepository.findByStatusAndCategoryType(ArticleStatus.PUBLISHED, categoryType, pageable), lang);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ArticleListDTO> getRelated(String slug, Pageable pageable) {
+    public PageResponse<ArticleListDTO> getRelated(String slug, Language lang, Pageable pageable) {
         Article article = articleRepository.findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("Article not found: " + slug));
         return toPageResponse(articleRepository.findRelated(
-            ArticleStatus.PUBLISHED, article.getCategory().getSlug(), article.getId(), pageable));
+            ArticleStatus.PUBLISHED, article.getCategory().getSlug(), article.getId(), pageable), lang);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ArticleListDTO> getAllAdmin(Pageable pageable) {
-        return toPageResponse(articleRepository.findAll(pageable));
+        return toPageResponse(articleRepository.findAll(pageable), Language.DEFAULT);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ArticleListDTO> getByStatusAdmin(String status, Pageable pageable) {
         ArticleStatus articleStatus = ArticleStatus.valueOf(status);
-        return toPageResponse(articleRepository.findByStatus(articleStatus, pageable));
+        return toPageResponse(articleRepository.findByStatus(articleStatus, pageable), Language.DEFAULT);
     }
 
     @Transactional(readOnly = true)
@@ -144,7 +147,12 @@ public class ArticleService {
             article.setPublishedDate(LocalDate.now());
         }
 
-        return articleMapper.toDTO(articleRepository.save(article));
+        article = articleRepository.save(article);
+        saveTranslations(article, dto.translations());
+        translationTaskService.createTasksForEntity(TranslationTaskEntityType.ARTICLE, article.getId());
+        autoTranslationService.translateArticle(article.getId(), Language.DEFAULT);
+
+        return articleMapper.toDTO(article);
     }
 
     public ArticleDTO update(Long id, ArticleCreateDTO dto) {
@@ -187,7 +195,11 @@ public class ArticleService {
             article.setPublishedDate(LocalDate.now());
         }
 
-        return articleMapper.toDTO(articleRepository.save(article));
+        article = articleRepository.save(article);
+        saveTranslations(article, dto.translations());
+        autoTranslationService.translateArticle(article.getId(), Language.DEFAULT);
+
+        return articleMapper.toDTO(article);
     }
 
     public void changeStatus(Long id, String status) {
@@ -204,7 +216,6 @@ public class ArticleService {
         Article article = articleRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Article not found: " + id));
         if (!article.getFeatured()) {
-            // Unset any current featured article
             articleRepository.findByFeaturedTrueAndStatus(ArticleStatus.PUBLISHED)
                 .ifPresent(current -> {
                     current.setFeatured(false);
@@ -226,9 +237,31 @@ public class ArticleService {
         }
     }
 
-    private PageResponse<ArticleListDTO> toPageResponse(Page<Article> page) {
+    private void saveTranslations(Article article, List<ArticleTranslationDTO> translations) {
+        if (translations == null) return;
+        for (ArticleTranslationDTO dto : translations) {
+            Language lang = Language.valueOf(dto.language());
+            ArticleTranslation t = article.getTranslations().get(lang);
+            if (t == null) {
+                t = ArticleTranslation.builder()
+                    .article(article)
+                    .language(lang)
+                    .build();
+            }
+            t.setTitle(dto.title());
+            t.setExcerpt(dto.excerpt());
+            t.setBody(dto.body());
+            t.setMetaTitle(dto.metaTitle());
+            t.setMetaDescription(dto.metaDescription());
+            t.setReadingTimeMinutes(dto.readingTimeMinutes());
+            article.getTranslations().put(lang, t);
+            articleTranslationRepository.save(t);
+        }
+    }
+
+    private PageResponse<ArticleListDTO> toPageResponse(Page<Article> page, Language lang) {
         List<ArticleListDTO> content = page.getContent().stream()
-            .map(articleMapper::toListDTO).toList();
+            .map(a -> articleMapper.toListDTO(a, lang)).toList();
         return new PageResponse<>(content, page.getNumber(), page.getSize(),
             page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
