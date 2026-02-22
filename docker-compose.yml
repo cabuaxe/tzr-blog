@@ -9,6 +9,8 @@ services:
       DB_USER: tzr
       DB_PASSWORD: tzr-secret
       JWT_SECRET: "change-this-to-a-long-random-secret-at-least-256-bits-for-production"
+      DEEPL_API_KEY: ${DEEPL_API_KEY:-}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy

@@ -18,6 +18,8 @@ services:
       MAIL_USER: ${MAIL_USER:-tzr@zuacaldeira.com}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       APP_BASE_URL: ${APP_BASE_URL:-https://staging.tzr.zuacaldeira.com}
+      DEEPL_API_KEY: ${DEEPL_API_KEY:-}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
     depends_on:
       tzr-blog-staging-db:
         condition: service_healthy
