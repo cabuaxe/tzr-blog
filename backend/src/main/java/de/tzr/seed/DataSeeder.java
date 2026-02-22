@@ -25,6 +25,11 @@ public class DataSeeder implements CommandLineRunner {
     private final TagRepository tagRepository;
     private final ArticleRepository articleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ArticleTranslationRepository articleTranslationRepository;
+    private final CategoryTranslationRepository categoryTranslationRepository;
+    private final AuthorTranslationRepository authorTranslationRepository;
+    private final TagTranslationRepository tagTranslationRepository;
+    private final TranslationTaskRepository translationTaskRepository;
 
     @Override
     public void run(String... args) {
@@ -69,7 +74,13 @@ public class DataSeeder implements CommandLineRunner {
             cat("MEDIENKOMPETENZ", "medienkompetenz", "Medienkompetenz", "Digitale Bildung und Medienerziehung in der fr\u00fchen Kindheit.", "\uD83D\uDCF1", "#3a6b9e", "#e5edf5", CategoryType.QUERSCHNITTSAUFGABE, 12)
         );
         List<Category> saved = categoryRepository.saveAll(categories);
-        log.info("Created {} categories.", saved.size());
+        for (Category c : saved) {
+            categoryTranslationRepository.save(CategoryTranslation.builder()
+                .category(c).language(Language.DE).name(c.getName())
+                .displayName(c.getDisplayName()).description(c.getDescription()).build());
+            createPendingTasks(TranslationTaskEntityType.CATEGORY, c.getId());
+        }
+        log.info("Created {} categories with DE translations.", saved.size());
         return saved;
     }
 
@@ -91,7 +102,12 @@ public class DataSeeder implements CommandLineRunner {
                 .build()
         );
         List<Author> saved = authorRepository.saveAll(authors);
-        log.info("Created {} authors.", saved.size());
+        for (Author a : saved) {
+            authorTranslationRepository.save(AuthorTranslation.builder()
+                .author(a).language(Language.DE).bio(a.getBio()).build());
+            createPendingTasks(TranslationTaskEntityType.AUTHOR, a.getId());
+        }
+        log.info("Created {} authors with DE translations.", saved.size());
         return saved;
     }
 
@@ -107,9 +123,12 @@ public class DataSeeder implements CommandLineRunner {
         for (String name : tagNames) {
             Tag tag = Tag.builder().name(name).slug(SlugUtil.slugify(name)).build();
             tag = tagRepository.save(tag);
+            tagTranslationRepository.save(TagTranslation.builder()
+                .tag(tag).language(Language.DE).name(tag.getName()).build());
+            createPendingTasks(TranslationTaskEntityType.TAG, tag.getId());
             tagMap.put(name, tag);
         }
-        log.info("Created {} tags.", tagMap.size());
+        log.info("Created {} tags with DE translations.", tagMap.size());
         return tagMap;
     }
 
@@ -287,7 +306,23 @@ public class DataSeeder implements CommandLineRunner {
             .publishedDate(date)
             .build();
 
-        articleRepository.save(article);
+        article = articleRepository.save(article);
+        articleTranslationRepository.save(ArticleTranslation.builder()
+            .article(article).language(Language.DE).title(article.getTitle())
+            .excerpt(article.getExcerpt()).body(article.getBody())
+            .metaTitle(article.getTitle()).metaDescription(article.getExcerpt())
+            .readingTimeMinutes(Math.max(1, Math.round(article.getBody().replaceAll("<[^>]*>", "").trim().split("\\s+").length / 200.0f)))
+            .build());
+        createPendingTasks(TranslationTaskEntityType.ARTICLE, article.getId());
+    }
+
+    private void createPendingTasks(TranslationTaskEntityType entityType, Long entityId) {
+        for (Language targetLang : List.of(Language.PT, Language.EN)) {
+            translationTaskRepository.save(TranslationTask.builder()
+                .entityType(entityType).entityId(entityId)
+                .sourceLang(Language.DE).targetLang(targetLang)
+                .status(TranslationTaskStatus.PENDING).build());
+        }
     }
 
     private String loadArticleBody(String slug) {
