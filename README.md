@@ -148,7 +148,7 @@ docker run -p 8080:8080 \
 A Docker image is automatically built and pushed to GHCR on version tags:
 
 ```bash
-docker pull ghcr.io/cabuaxe/tzr-blog:latest
+docker pull ghcr.io/zuacaldeira/tzr:latest
 ```
 
 ### Manual build

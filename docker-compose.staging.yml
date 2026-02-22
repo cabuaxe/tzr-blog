@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/cabuaxe/tzr-blog:${VERSION:-staging}
+    image: ghcr.io/zuacaldeira/tzr:${VERSION:-staging}
     container_name: tzr-blog-staging-app
     restart: unless-stopped
     ports:

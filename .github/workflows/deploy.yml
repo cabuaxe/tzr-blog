@@ -93,7 +93,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key root@${{ env.VPS_HOST }} "mkdir -p ${{ env.PROJECT_DIR }}"
           scp -i ~/.ssh/deploy_key docker-compose.staging.yml root@${{ env.VPS_HOST }}:${{ env.PROJECT_DIR }}/docker-compose.staging.yml
-          scp -i ~/.ssh/deploy_key .env.staging root@${{ env.VPS_HOST }}:${{ env.PROJECT_DIR }}/.env
 
       - name: Copy nginx config and set up SSL
         run: |
