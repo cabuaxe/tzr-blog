@@ -4,10 +4,12 @@ import { Observable } from 'rxjs';
 import { Article, ArticleList, ArticleCreate } from '../models/article.model';
 import { PageResponse } from '../models/page.model';
 import { environment } from '../../../environments/environment';
+import { LanguageService } from './language.service';
 
 @Injectable({ providedIn: 'root' })
 export class ArticleService {
   private http = inject(HttpClient);
+  private langService = inject(LanguageService);
   private api = environment.apiUrl;
 
   // Public endpoints
@@ -21,23 +23,27 @@ export class ArticleService {
     if (params.academic !== undefined) httpParams = httpParams.set('academic', params.academic);
     if (params.tag) httpParams = httpParams.set('tag', params.tag);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
+    httpParams = httpParams.set('lang', this.langService.currentLang());
     return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles`, { params: httpParams });
   }
 
   getArticleBySlug(slug: string): Observable<Article> {
-    return this.http.get<Article>(`${this.api}/public/articles/${slug}`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<Article>(`${this.api}/public/articles/${slug}`, { params });
   }
 
   getFeaturedArticle(): Observable<Article> {
-    return this.http.get<Article>(`${this.api}/public/articles/featured`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<Article>(`${this.api}/public/articles/featured`, { params });
   }
 
   searchArticles(q: string, page = 0, size = 12): Observable<PageResponse<ArticleList>> {
-    return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/search`, { params: { q, page, size } });
+    return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/search`, { params: { q, page, size, lang: this.langService.currentLang() } });
   }
 
   getRelatedArticles(slug: string): Observable<PageResponse<ArticleList>> {
-    return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/${slug}/related`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<PageResponse<ArticleList>>(`${this.api}/public/articles/${slug}/related`, { params });
   }
 
   // Admin endpoints

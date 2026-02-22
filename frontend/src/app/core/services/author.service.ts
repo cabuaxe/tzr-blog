@@ -1,17 +1,20 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Author, AuthorCreate } from '../models/author.model';
 import { environment } from '../../../environments/environment';
+import { LanguageService } from './language.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthorService {
   private http = inject(HttpClient);
+  private langService = inject(LanguageService);
   private api = environment.apiUrl;
 
   // Public endpoints
   getAuthorBySlug(slug: string): Observable<Author> {
-    return this.http.get<Author>(`${this.api}/public/authors/${slug}`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<Author>(`${this.api}/public/authors/${slug}`, { params });
   }
 
   // Admin endpoints

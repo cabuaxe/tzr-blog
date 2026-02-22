@@ -1,21 +1,25 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Category, CategoryCreate } from '../models/category.model';
 import { environment } from '../../../environments/environment';
+import { LanguageService } from './language.service';
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
   private http = inject(HttpClient);
+  private langService = inject(LanguageService);
   private api = environment.apiUrl;
 
   // Public endpoints
   getAllCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.api}/public/categories`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<Category[]>(`${this.api}/public/categories`, { params });
   }
 
   getCategoryBySlug(slug: string): Observable<Category> {
-    return this.http.get<Category>(`${this.api}/public/categories/${slug}`);
+    const params = new HttpParams().set('lang', this.langService.currentLang());
+    return this.http.get<Category>(`${this.api}/public/categories/${slug}`, { params });
   }
 
   // Admin endpoints
