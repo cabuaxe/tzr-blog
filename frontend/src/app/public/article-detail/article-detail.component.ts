@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal, computed, SecurityContext } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, computed, SecurityContext } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { Article } from '../../core/models/article.model';
@@ -147,6 +148,7 @@ export class ArticleDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private articleService = inject(ArticleService);
   private sanitizer = inject(DomSanitizer);
+  private destroyRef = inject(DestroyRef);
   routeHelper = inject(RouteHelperService);
 
   article = signal<Article | null>(null);
@@ -163,14 +165,14 @@ export class ArticleDetailComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const slug = params.get('slug');
       if (slug) {
-        this.articleService.getArticleBySlug(slug).subscribe(a => {
+        this.articleService.getArticleBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(a => {
           this.article.set(a);
           window.scrollTo({ top: 0 });
         });
-        this.articleService.getRelatedArticles(slug).subscribe(res => this.related.set(res.content));
+        this.articleService.getRelatedArticles(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => this.related.set(res.content));
       }
     });
   }

@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CategoryService } from '../../core/services/category.service';
 import { ArticleService } from '../../core/services/article.service';
@@ -72,6 +73,7 @@ export class CategoryDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private categoryService = inject(CategoryService);
   private articleService = inject(ArticleService);
+  private destroyRef = inject(DestroyRef);
   routeHelper = inject(RouteHelperService);
 
   category = signal<Category | null>(null);
@@ -81,10 +83,10 @@ export class CategoryDetailComponent implements OnInit {
   filter = signal<'all' | 'praxis' | 'academic'>('all');
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const slug = params.get('slug');
       if (slug) {
-        this.categoryService.getCategoryBySlug(slug).subscribe(c => this.category.set(c));
+        this.categoryService.getCategoryBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(c => this.category.set(c));
         this.loadArticles(slug);
       }
     });
@@ -96,7 +98,7 @@ export class CategoryDetailComponent implements OnInit {
     const params: any = { category: catSlug, page: this.page(), size: 12 };
     if (this.filter() === 'academic') params.academic = true;
     if (this.filter() === 'praxis') params.academic = false;
-    this.articleService.getPublishedArticles(params).subscribe(res => {
+    this.articleService.getPublishedArticles(params).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
       this.articles.set(res.content);
       this.totalPages.set(res.totalPages);
     });

@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { CategoryService } from '../../core/services/category.service';
@@ -183,6 +184,7 @@ export class HomeComponent implements OnInit {
   private newsletterService = inject(NewsletterService);
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
+  private destroyRef = inject(DestroyRef);
   routeHelper = inject(RouteHelperService);
 
   featured = signal<ArticleList | null>(null);
@@ -217,30 +219,38 @@ export class HomeComponent implements OnInit {
   }
 
   loadFeatured() {
-    this.articleService.getPublishedArticles({ size: 3, sort: 'publishedDate,desc' }).subscribe(res => {
-      const all = res.content;
-      this.featured.set(all[0] || null);
-      this.sideArticles.set(all.slice(1, 3));
-    });
+    this.articleService.getPublishedArticles({ size: 3, sort: 'publishedDate,desc' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        const all = res.content;
+        this.featured.set(all[0] || null);
+        this.sideArticles.set(all.slice(1, 3));
+      });
   }
 
   loadCategories() {
-    this.categoryService.getAllCategories().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAllCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(cats => this.categories.set(cats));
   }
 
   loadArticles() {
     const params: any = { page: this.currentPage(), size: 9 };
     if (this.selectedCategory()) params.category = this.selectedCategory();
-    this.articleService.getPublishedArticles(params).subscribe(res => {
-      this.articles.set(res.content);
-      this.totalPages.set(res.totalPages);
-    });
+    this.articleService.getPublishedArticles(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.articles.set(res.content);
+        this.totalPages.set(res.totalPages);
+      });
   }
 
   loadAcademicArticles() {
-    this.articleService.getPublishedArticles({ academic: true, size: 3 }).subscribe(res => {
-      this.academicArticles.set(res.content);
-    });
+    this.articleService.getPublishedArticles({ academic: true, size: 3 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.academicArticles.set(res.content);
+      });
   }
 
   onCategoryFilter(slug: string | null) {
@@ -257,7 +267,7 @@ export class HomeComponent implements OnInit {
 
   onSubscribe() {
     if (!this.newsletterEmail) return;
-    this.newsletterService.subscribe(this.newsletterEmail).subscribe({
+    this.newsletterService.subscribe(this.newsletterEmail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.subscribeMsg.set(res.message || this.translate.instant('home.newsletter.successPending'));
         this.subscribeMsgError.set(false);

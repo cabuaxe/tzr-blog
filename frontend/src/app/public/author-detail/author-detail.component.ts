@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { AuthorService } from '../../core/services/author.service';
@@ -66,6 +67,7 @@ export class AuthorDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private authorService = inject(AuthorService);
   private articleService = inject(ArticleService);
+  private destroyRef = inject(DestroyRef);
   routeHelper = inject(RouteHelperService);
 
   author = signal<Author | null>(null);
@@ -74,10 +76,10 @@ export class AuthorDetailComponent implements OnInit {
   totalPages = signal(0);
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const slug = params.get('slug');
       if (slug) {
-        this.authorService.getAuthorBySlug(slug).subscribe(a => this.author.set(a));
+        this.authorService.getAuthorBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(a => this.author.set(a));
         this.loadArticles(slug);
       }
     });
@@ -86,7 +88,7 @@ export class AuthorDetailComponent implements OnInit {
   loadArticles(slug?: string) {
     const s = slug || this.author()?.slug;
     if (!s) return;
-    this.articleService.getPublishedArticles({ page: this.page(), size: 12, author: s }).subscribe(res => {
+    this.articleService.getPublishedArticles({ page: this.page(), size: 12, author: s }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
       this.articles.set(res.content);
       this.totalPages.set(res.totalPages);
     });

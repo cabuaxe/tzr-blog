@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { ArticleList } from '../../core/models/article.model';
@@ -42,6 +43,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class SearchResultsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private articleService = inject(ArticleService);
+  private destroyRef = inject(DestroyRef);
 
   articles = signal<ArticleList[]>([]);
   query = signal('');
@@ -53,14 +55,14 @@ export class SearchResultsComponent implements OnInit {
 
   ngOnInit() {
     // Handle both search and tag routes
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const slug = params.get('slug');
       if (slug) {
         this.tagSlug.set(slug);
         this.loadByTag(slug);
       }
     });
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const q = params.get('q');
       if (q) {
         this.query.set(q);
@@ -72,7 +74,7 @@ export class SearchResultsComponent implements OnInit {
 
   search(q: string) {
     this.loading.set(true);
-    this.articleService.searchArticles(q, this.page(), 12).subscribe(res => {
+    this.articleService.searchArticles(q, this.page(), 12).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
       this.articles.set(res.content);
       this.totalPages.set(res.totalPages);
       this.totalElements.set(res.totalElements);
@@ -82,7 +84,7 @@ export class SearchResultsComponent implements OnInit {
 
   loadByTag(slug: string) {
     this.loading.set(true);
-    this.articleService.getPublishedArticles({ tag: slug, page: this.page(), size: 12 }).subscribe(res => {
+    this.articleService.getPublishedArticles({ tag: slug, page: this.page(), size: 12 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
       this.articles.set(res.content);
       this.totalPages.set(res.totalPages);
       this.totalElements.set(res.totalElements);
