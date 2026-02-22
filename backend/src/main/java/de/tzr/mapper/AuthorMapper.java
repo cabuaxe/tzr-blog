@@ -1,5 +1,7 @@
 package de.tzr.mapper;
 
+import static de.tzr.mapper.TranslationResolver.resolve;
+
 import de.tzr.dto.AuthorCreateDTO;
 import de.tzr.dto.AuthorDTO;
 import de.tzr.dto.AuthorTranslationDTO;
@@ -44,11 +46,5 @@ public class AuthorMapper {
             .email(dto.email())
             .avatarUrl(dto.avatarUrl())
             .build();
-    }
-
-    private String resolve(String primary, String fallback, String entityField) {
-        if (primary != null && !primary.isBlank()) return primary;
-        if (fallback != null && !fallback.isBlank()) return fallback;
-        return entityField;
     }
 }

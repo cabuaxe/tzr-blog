@@ -1,5 +1,7 @@
 package de.tzr.mapper;
 
+import static de.tzr.mapper.TranslationResolver.resolve;
+
 import de.tzr.dto.*;
 import de.tzr.model.*;
 import org.springframework.stereotype.Component;
@@ -82,11 +84,5 @@ public class ArticleMapper {
         TagTranslation fallback = (tr == null && lang != Language.DE) ? t.getTranslations().get(Language.DE) : null;
         String name = resolve(tr != null ? tr.getName() : null, fallback != null ? fallback.getName() : null, t.getName());
         return new TagDTO(t.getId(), name, t.getSlug(), 0, null);
-    }
-
-    private String resolve(String primary, String fallback, String entityField) {
-        if (primary != null && !primary.isBlank()) return primary;
-        if (fallback != null && !fallback.isBlank()) return fallback;
-        return entityField;
     }
 }

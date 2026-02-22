@@ -20,7 +20,7 @@ public class ClaudeTranslationClient {
 
     private final TranslationProperties props;
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public String translate(String text, Language sourceLang, Language targetLang) {
         if (text == null || text.isBlank()) return text;

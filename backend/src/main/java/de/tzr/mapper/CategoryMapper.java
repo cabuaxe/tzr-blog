@@ -1,5 +1,7 @@
 package de.tzr.mapper;
 
+import static de.tzr.mapper.TranslationResolver.resolve;
+
 import de.tzr.dto.CategoryCreateDTO;
 import de.tzr.dto.CategoryDTO;
 import de.tzr.dto.CategoryTranslationDTO;
@@ -52,11 +54,5 @@ public class CategoryMapper {
             .type(CategoryType.valueOf(dto.type()))
             .sortOrder(dto.sortOrder() != null ? dto.sortOrder() : 0)
             .build();
-    }
-
-    private String resolve(String primary, String fallback, String entityField) {
-        if (primary != null && !primary.isBlank()) return primary;
-        if (fallback != null && !fallback.isBlank()) return fallback;
-        return entityField;
     }
 }

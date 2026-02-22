@@ -6,6 +6,21 @@ import { environment } from '../../../environments/environment';
 import { TranslationTaskService } from '../../core/services/translation-task.service';
 import { TranslationTask } from '../../core/models/translation-task.model';
 
+interface DashboardStats {
+  totalArticles: number;
+  draftArticles: number;
+  publishedArticles: number;
+  categories: number;
+  authors: number;
+  subscribers: number;
+}
+
+interface ArticleSummary {
+  id: number;
+  title: string;
+  status: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -136,17 +151,17 @@ export class DashboardComponent implements OnInit {
   private api = environment.apiUrl;
   private translationTaskService = inject(TranslationTaskService);
 
-  stats = signal<any>(null);
-  recentDrafts = signal<any[]>([]);
-  recentPublished = signal<any[]>([]);
+  stats = signal<DashboardStats | null>(null);
+  recentDrafts = signal<ArticleSummary[]>([]);
+  recentPublished = signal<ArticleSummary[]>([]);
   pendingTranslations = signal(0);
   pendingTasks = signal<TranslationTask[]>([]);
 
   ngOnInit() {
-    this.http.get<any>(`${this.api}/admin/dashboard/stats`).subscribe(s => this.stats.set(s));
-    this.http.get<any>(`${this.api}/admin/articles`, { params: { status: 'DRAFT', size: '5', sort: 'createdAt,desc' } })
+    this.http.get<DashboardStats>(`${this.api}/admin/dashboard/stats`).subscribe(s => this.stats.set(s));
+    this.http.get<{ content: ArticleSummary[] }>(`${this.api}/admin/articles`, { params: { status: 'DRAFT', size: '5', sort: 'createdAt,desc' } })
       .subscribe(res => this.recentDrafts.set(res.content || []));
-    this.http.get<any>(`${this.api}/admin/articles`, { params: { status: 'PUBLISHED', size: '5', sort: 'publishedDate,desc' } })
+    this.http.get<{ content: ArticleSummary[] }>(`${this.api}/admin/articles`, { params: { status: 'PUBLISHED', size: '5', sort: 'publishedDate,desc' } })
       .subscribe(res => this.recentPublished.set(res.content || []));
     this.translationTaskService.getStats().subscribe(s => this.pendingTranslations.set(s.pending || 0));
     this.translationTaskService.getPendingTasks().subscribe(tasks => this.pendingTasks.set(tasks.slice(0, 5)));
