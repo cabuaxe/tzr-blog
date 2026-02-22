@@ -7,6 +7,7 @@ import { ArticleCardComponent } from '../../shared/components/article-card/artic
 import { ReadingTimePipe } from '../../shared/pipes/reading-time.pipe';
 import { DateDePipe } from '../../shared/pipes/date-de.pipe';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouteHelperService } from '../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-article-detail',
@@ -24,11 +25,11 @@ import { TranslateModule } from '@ngx-translate/core';
       <article class="container article-container page-enter">
         <!-- Breadcrumbs -->
         <nav class="breadcrumbs">
-          <a routerLink="/">{{ 'nav.home' | translate }}</a>
+          <a [routerLink]="routeHelper.home()">{{ 'nav.home' | translate }}</a>
           <span class="sep">&rsaquo;</span>
-          <a routerLink="/bereiche">{{ 'nav.areas' | translate }}</a>
+          <a [routerLink]="routeHelper.areasUrl()">{{ 'nav.areas' | translate }}</a>
           <span class="sep">&rsaquo;</span>
-          <a [routerLink]="['/bereiche', article()!.category.slug]">{{ article()!.category.displayName }}</a>
+          <a [routerLink]="routeHelper.areaDetailUrl(article()!.category.slug)">{{ article()!.category.displayName }}</a>
           <span class="sep">&rsaquo;</span>
           <span class="current">{{ article()!.title }}</span>
         </nav>
@@ -45,7 +46,7 @@ import { TranslateModule } from '@ngx-translate/core';
           </div>
           <h1>{{ article()!.title }}</h1>
           <div class="meta-row">
-            <a [routerLink]="['/autoren', article()!.author.slug]" class="author-link">
+            <a [routerLink]="routeHelper.authorUrl(article()!.author.slug)" class="author-link">
               {{ article()!.author.name }}
             </a>
             <span class="dot">&middot;</span>
@@ -56,7 +57,7 @@ import { TranslateModule } from '@ngx-translate/core';
           @if (article()!.tags.length) {
             <div class="tag-row">
               @for (tag of article()!.tags; track tag.id) {
-                <a [routerLink]="['/thema', tag.slug]" class="tag-pill">{{ tag.name }}</a>
+                <a [routerLink]="routeHelper.topicUrl(tag.slug)" class="tag-pill">{{ tag.name }}</a>
               }
             </div>
           }
@@ -144,6 +145,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class ArticleDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private articleService = inject(ArticleService);
+  routeHelper = inject(RouteHelperService);
 
   article = signal<Article | null>(null);
   related = signal<ArticleList[]>([]);

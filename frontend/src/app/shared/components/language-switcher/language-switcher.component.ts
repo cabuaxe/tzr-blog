@@ -1,5 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { LanguageService, AppLanguage } from '../../../core/services/language.service';
+import { RouteHelperService } from '../../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -46,6 +48,8 @@ import { LanguageService, AppLanguage } from '../../../core/services/language.se
 })
 export class LanguageSwitcherComponent {
   langService = inject(LanguageService);
+  private router = inject(Router);
+  private routeHelper = inject(RouteHelperService);
   open = signal(false);
 
   currentLang = this.langService.currentLang;
@@ -55,7 +59,9 @@ export class LanguageSwitcherComponent {
   close() { this.open.set(false); }
 
   selectLang(code: AppLanguage) {
+    const newUrl = this.routeHelper.switchLangUrl(code, this.router.url);
     this.langService.setLanguage(code);
+    this.router.navigateByUrl(newUrl);
     this.open.set(false);
   }
 }

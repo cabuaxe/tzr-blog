@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouteHelperService } from '../../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-footer',
@@ -16,15 +17,15 @@ import { TranslateModule } from '@ngx-translate/core';
           </div>
           <div class="footer-col">
             <h4>{{ 'footer.navigation' | translate }}</h4>
-            <a routerLink="/">{{ 'nav.home' | translate }}</a>
-            <a routerLink="/bereiche">{{ 'categories.educational' | translate }}</a>
-            <a routerLink="/suche" [queryParams]="{academic: true}">{{ 'footer.academicArticles' | translate }}</a>
+            <a [routerLink]="routeHelper.home()">{{ 'nav.home' | translate }}</a>
+            <a [routerLink]="routeHelper.areasUrl()">{{ 'categories.educational' | translate }}</a>
+            <a [routerLink]="routeHelper.searchUrl()" [queryParams]="{academic: true}">{{ 'footer.academicArticles' | translate }}</a>
           </div>
           <div class="footer-col">
             <h4>{{ 'footer.topics' | translate }}</h4>
-            <a routerLink="/bereiche/gesundheit">{{ 'footer.health' | translate }}</a>
-            <a routerLink="/bereiche/kommunikation">{{ 'footer.communication' | translate }}</a>
-            <a routerLink="/bereiche/soziales">{{ 'footer.social' | translate }}</a>
+            <a [routerLink]="routeHelper.areaDetailUrl('gesundheit')">{{ 'footer.health' | translate }}</a>
+            <a [routerLink]="routeHelper.areaDetailUrl('kommunikation')">{{ 'footer.communication' | translate }}</a>
+            <a [routerLink]="routeHelper.areaDetailUrl('soziales')">{{ 'footer.social' | translate }}</a>
           </div>
           <div class="footer-col">
             <h4>{{ 'footer.legal' | translate }}</h4>
@@ -71,5 +72,6 @@ import { TranslateModule } from '@ngx-translate/core';
   `]
 })
 export class FooterComponent {
+  routeHelper = inject(RouteHelperService);
   currentYear = new Date().getFullYear();
 }

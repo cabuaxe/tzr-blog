@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CategoryService } from '../../core/services/category.service';
 import { Category } from '../../core/models/category.model';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouteHelperService } from '../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-category-list',
@@ -19,7 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <h2>{{ 'categories.educational' | translate }}</h2>
         <div class="cat-grid">
           @for (cat of bildungsbereiche(); track cat.id) {
-            <a [routerLink]="['/bereiche', cat.slug]" class="cat-card" [style.border-left-color]="cat.color">
+            <a [routerLink]="routeHelper.areaDetailUrl(cat.slug)" class="cat-card" [style.border-left-color]="cat.color">
               <span class="cat-emoji">{{ cat.emoji }}</span>
               <h3>{{ cat.displayName }}</h3>
               <p class="cat-desc">{{ cat.description }}</p>
@@ -33,7 +34,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <h2>{{ 'categories.crossCutting' | translate }}</h2>
         <div class="cat-grid">
           @for (cat of querschnittsaufgaben(); track cat.id) {
-            <a [routerLink]="['/bereiche', cat.slug]" class="cat-card" [style.border-left-color]="cat.color">
+            <a [routerLink]="routeHelper.areaDetailUrl(cat.slug)" class="cat-card" [style.border-left-color]="cat.color">
               <span class="cat-emoji">{{ cat.emoji }}</span>
               <h3>{{ cat.displayName }}</h3>
               <p class="cat-desc">{{ cat.description }}</p>
@@ -69,6 +70,7 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class CategoryListComponent implements OnInit {
   private categoryService = inject(CategoryService);
+  routeHelper = inject(RouteHelperService);
   categories = signal<Category[]>([]);
   bildungsbereiche = signal<Category[]>([]);
   querschnittsaufgaben = signal<Category[]>([]);

@@ -7,6 +7,7 @@ import { ArticleList } from '../../core/models/article.model';
 import { ArticleCardComponent } from '../../shared/components/article-card/article-card.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouteHelperService } from '../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-author-detail',
@@ -16,7 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
     @if (author()) {
       <div class="container page-enter">
         <nav class="breadcrumbs">
-          <a routerLink="/">{{ 'nav.home' | translate }}</a><span class="sep">&rsaquo;</span>
+          <a [routerLink]="routeHelper.home()">{{ 'nav.home' | translate }}</a><span class="sep">&rsaquo;</span>
           <span>{{ author()!.name }}</span>
         </nav>
         <div class="author-header">
@@ -65,6 +66,7 @@ export class AuthorDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private authorService = inject(AuthorService);
   private articleService = inject(ArticleService);
+  routeHelper = inject(RouteHelperService);
 
   author = signal<Author | null>(null);
   articles = signal<ArticleList[]>([]);

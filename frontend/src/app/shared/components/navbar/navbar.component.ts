@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
+import { RouteHelperService } from '../../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,13 +12,13 @@ import { LanguageSwitcherComponent } from '../language-switcher/language-switche
   template: `
     <nav class="navbar">
       <div class="navbar-inner container">
-        <a routerLink="/" class="navbar-brand">
+        <a [routerLink]="routeHelper.home()" class="navbar-brand">
           <span class="brand-logo">TZR</span>
           <span class="brand-sub">{{ 'brand.tagline' | translate }}</span>
         </a>
         <div class="navbar-links">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ 'nav.home' | translate }}</a>
-          <a routerLink="/bereiche" routerLinkActive="active">{{ 'nav.areas' | translate }}</a>
+          <a [routerLink]="routeHelper.home()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ 'nav.home' | translate }}</a>
+          <a [routerLink]="routeHelper.areasUrl()" routerLinkActive="active">{{ 'nav.areas' | translate }}</a>
           <app-language-switcher />
           <button class="search-btn" (click)="toggleSearch()" [attr.aria-label]="'nav.search' | translate">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -29,8 +30,8 @@ import { LanguageSwitcherComponent } from '../language-switcher/language-switche
       </div>
       @if (mobileMenuOpen()) {
         <div class="mobile-menu">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">{{ 'nav.home' | translate }}</a>
-          <a routerLink="/bereiche" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.areas' | translate }}</a>
+          <a [routerLink]="routeHelper.home()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">{{ 'nav.home' | translate }}</a>
+          <a [routerLink]="routeHelper.areasUrl()" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.areas' | translate }}</a>
           <button class="mobile-search-btn" (click)="toggleSearch(); closeMobileMenu()">{{ 'nav.search' | translate }}</button>
         </div>
       }
@@ -118,6 +119,7 @@ export class NavbarComponent {
   mobileMenuOpen = signal(false);
   searchQuery = '';
   private router = inject(Router);
+  routeHelper = inject(RouteHelperService);
 
   toggleSearch() {
     this.searchOpen.update(v => !v);
@@ -133,7 +135,7 @@ export class NavbarComponent {
 
   onSearch() {
     if (this.searchQuery.trim()) {
-      this.router.navigate(['/suche'], { queryParams: { q: this.searchQuery.trim() } });
+      this.router.navigate(this.routeHelper.searchUrl(), { queryParams: { q: this.searchQuery.trim() } });
       this.searchOpen.set(false);
       this.searchQuery = '';
     }

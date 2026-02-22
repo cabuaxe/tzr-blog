@@ -12,6 +12,7 @@ import { ReadingTimePipe } from '../../shared/pipes/reading-time.pipe';
 import { DateDePipe } from '../../shared/pipes/date-de.pipe';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { RouteHelperService } from '../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-home',
@@ -36,11 +37,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               <span class="sep">&middot;</span>
               <span>{{ featured()!.readingTimeMinutes | readingTime }}</span>
             </div>
-            <a [routerLink]="['/artikel', featured()!.slug]" class="hero-cta">{{ 'home.readArticle' | translate }}</a>
+            <a [routerLink]="routeHelper.articleUrl(featured()!.slug)" class="hero-cta">{{ 'home.readArticle' | translate }}</a>
           </div>
           <div class="hero-side">
             @for (article of sideArticles(); track article.id) {
-              <a [routerLink]="['/artikel', article.slug]" class="side-card">
+              <a [routerLink]="routeHelper.articleUrl(article.slug)" class="side-card">
                 <img [src]="article.coverImageUrl + '?auto=compress&cs=tinysrgb&w=120&h=80&fit=crop'" [alt]="article.title" class="side-thumb" />
                 <div class="side-content">
                   <span class="side-cat" [style.background]="article.category.bgColor" [style.color]="article.category.color">
@@ -96,7 +97,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     <section class="container">
       <div class="section-header">
         <h2 class="section-title">{{ 'home.academicSection' | translate }}</h2>
-        <a routerLink="/suche" [queryParams]="{academic: true}" class="section-link">{{ 'home.allAcademic' | translate }} &rarr;</a>
+        <a [routerLink]="routeHelper.searchUrl()" [queryParams]="{academic: true}" class="section-link">{{ 'home.allAcademic' | translate }} &rarr;</a>
       </div>
       <div class="article-grid">
         @for (article of academicArticles(); track article.id) {
@@ -182,6 +183,7 @@ export class HomeComponent implements OnInit {
   private newsletterService = inject(NewsletterService);
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
+  routeHelper = inject(RouteHelperService);
 
   featured = signal<ArticleList | null>(null);
   sideArticles = signal<ArticleList[]>([]);

@@ -7,6 +7,7 @@ import { ArticleList } from '../../core/models/article.model';
 import { ArticleCardComponent } from '../../shared/components/article-card/article-card.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouteHelperService } from '../../core/services/route-helper.service';
 
 @Component({
   selector: 'app-category-detail',
@@ -16,8 +17,8 @@ import { TranslateModule } from '@ngx-translate/core';
     @if (category()) {
       <div class="container page-enter">
         <nav class="breadcrumbs">
-          <a routerLink="/">{{ 'nav.home' | translate }}</a><span class="sep">&rsaquo;</span>
-          <a routerLink="/bereiche">{{ 'nav.areas' | translate }}</a><span class="sep">&rsaquo;</span>
+          <a [routerLink]="routeHelper.home()">{{ 'nav.home' | translate }}</a><span class="sep">&rsaquo;</span>
+          <a [routerLink]="routeHelper.areasUrl()">{{ 'nav.areas' | translate }}</a><span class="sep">&rsaquo;</span>
           <span>{{ category()!.displayName }}</span>
         </nav>
         <div class="cat-header" [style.border-left-color]="category()!.color">
@@ -71,6 +72,7 @@ export class CategoryDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private categoryService = inject(CategoryService);
   private articleService = inject(ArticleService);
+  routeHelper = inject(RouteHelperService);
 
   category = signal<Category | null>(null);
   articles = signal<ArticleList[]>([]);

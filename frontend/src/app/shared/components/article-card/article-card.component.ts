@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { RouteHelperService } from '../../../core/services/route-helper.service';
 import { ArticleList } from '../../../core/models/article.model';
 import { ReadingTimePipe } from '../../pipes/reading-time.pipe';
 import { DateDePipe } from '../../pipes/date-de.pipe';
@@ -11,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [RouterLink, ReadingTimePipe, DateDePipe, TruncatePipe, TranslateModule],
   template: `
-    <a [routerLink]="['/artikel', article().slug]" class="card">
+    <a [routerLink]="routeHelper.articleUrl(article().slug)" class="card">
       <div class="card-header" [style.background-image]="'url(' + article().coverImageUrl + '?auto=compress&cs=tinysrgb&w=600&h=340&fit=crop)'">
         <span class="card-emoji">{{ article().cardEmoji }}</span>
         @if (article().academic) {
@@ -83,5 +84,6 @@ import { TranslateModule } from '@ngx-translate/core';
   `]
 })
 export class ArticleCardComponent {
+  routeHelper = inject(RouteHelperService);
   article = input.required<ArticleList>();
 }
