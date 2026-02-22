@@ -7,15 +7,16 @@ import { ArticleService } from '../../../core/services/article.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { AuthorService } from '../../../core/services/author.service';
 import { TagService } from '../../../core/services/tag.service';
-import { Article, ArticleCreate } from '../../../core/models/article.model';
+import { Article, ArticleCreate, ArticleTranslation } from '../../../core/models/article.model';
 import { Category } from '../../../core/models/category.model';
 import { Author } from '../../../core/models/author.model';
 import { Tag } from '../../../core/models/tag.model';
+import { TranslationTabsComponent, TranslationLang, TranslationStatus } from '../../shared/translation-tabs/translation-tabs.component';
 
 @Component({
   selector: 'app-article-form',
   standalone: true,
-  imports: [FormsModule, RouterLink, QuillModule, TranslateModule],
+  imports: [FormsModule, RouterLink, QuillModule, TranslateModule, TranslationTabsComponent],
   template: `
     <div class="form-page">
       <div class="form-header">
@@ -29,9 +30,10 @@ import { Tag } from '../../../core/models/tag.model';
 
       <div class="form-grid">
         <div class="form-main">
+          <app-translation-tabs [status]="translationStatus()" (langChange)="onLangChange($event)" />
           <div class="field">
             <label>{{ 'admin.articleForm.title' | translate }}</label>
-            <input type="text" [(ngModel)]="form.title" (ngModelChange)="generateSlug()" [placeholder]="'admin.articleForm.titlePlaceholder' | translate" />
+            <input type="text" [ngModel]="currentTitle()" (ngModelChange)="setTitle($event)" [placeholder]="'admin.articleForm.titlePlaceholder' | translate" />
           </div>
           <div class="field">
             <label>{{ 'admin.articleForm.slug' | translate }}</label>
@@ -39,7 +41,7 @@ import { Tag } from '../../../core/models/tag.model';
           </div>
           <div class="field">
             <label>{{ 'admin.articleForm.excerpt' | translate }}</label>
-            <textarea [(ngModel)]="form.excerpt" rows="3" [placeholder]="'admin.articleForm.excerptPlaceholder' | translate"></textarea>
+            <textarea [ngModel]="currentExcerpt()" (ngModelChange)="setExcerpt($event)" rows="3" [placeholder]="'admin.articleForm.excerptPlaceholder' | translate"></textarea>
           </div>
           <div class="field editor-field">
             <div class="editor-header">
@@ -54,7 +56,8 @@ import { Tag } from '../../../core/models/tag.model';
             @if (!htmlSourceMode()) {
               <quill-editor
                 #quillEditor
-                [(ngModel)]="form.body"
+                [ngModel]="currentBody()"
+                (ngModelChange)="setBody($event)"
                 [modules]="quillModules"
                 [styles]="{ minHeight: '400px' }"
                 [placeholder]="'admin.articleForm.bodyPlaceholder' | translate"
@@ -64,10 +67,10 @@ import { Tag } from '../../../core/models/tag.model';
             } @else {
               <textarea
                 class="html-source"
-                [(ngModel)]="form.body"
+                [ngModel]="currentBody()"
+                (ngModelChange)="setBody($event)"
                 rows="20"
                 [placeholder]="'admin.articleForm.htmlPlaceholder' | translate"
-                (ngModelChange)="onContentChanged()"
               ></textarea>
             }
           </div>
@@ -149,11 +152,11 @@ import { Tag } from '../../../core/models/tag.model';
             <h3>{{ 'admin.articleForm.seo' | translate }}</h3>
             <div class="field">
               <label>{{ 'admin.articleForm.metaTitle' | translate }}</label>
-              <input type="text" [(ngModel)]="form.metaTitle" [placeholder]="'admin.articleForm.metaTitlePlaceholder' | translate" />
+              <input type="text" [ngModel]="currentMetaTitle()" (ngModelChange)="setMetaTitle($event)" [placeholder]="'admin.articleForm.metaTitlePlaceholder' | translate" />
             </div>
             <div class="field">
               <label>{{ 'admin.articleForm.metaDescription' | translate }}</label>
-              <textarea [(ngModel)]="form.metaDescription" rows="2" [placeholder]="'admin.articleForm.metaDescriptionPlaceholder' | translate"></textarea>
+              <textarea [ngModel]="currentMetaDesc()" (ngModelChange)="setMetaDesc($event)" rows="2" [placeholder]="'admin.articleForm.metaDescriptionPlaceholder' | translate"></textarea>
             </div>
           </div>
         </div>
@@ -260,6 +263,101 @@ export class ArticleFormComponent implements OnInit {
     publishedDate: '', metaTitle: '', metaDescription: ''
   };
 
+  activeTranslationLang = signal<TranslationLang>('DE');
+  translationPT: { title: string; excerpt: string; body: string; metaTitle: string; metaDescription: string } = { title: '', excerpt: '', body: '', metaTitle: '', metaDescription: '' };
+  translationEN: { title: string; excerpt: string; body: string; metaTitle: string; metaDescription: string } = { title: '', excerpt: '', body: '', metaTitle: '', metaDescription: '' };
+
+  translationStatus = (): TranslationStatus => ({
+    DE: !!this.form.title,
+    PT: !!this.translationPT.title,
+    EN: !!this.translationEN.title,
+  });
+
+  onLangChange(lang: TranslationLang) {
+    this.activeTranslationLang.set(lang);
+  }
+
+  currentTitle(): string {
+    switch (this.activeTranslationLang()) {
+      case 'PT': return this.translationPT.title;
+      case 'EN': return this.translationEN.title;
+      default: return this.form.title;
+    }
+  }
+
+  setTitle(value: string) {
+    switch (this.activeTranslationLang()) {
+      case 'PT': this.translationPT.title = value; break;
+      case 'EN': this.translationEN.title = value; break;
+      default: this.form.title = value; this.generateSlug(); break;
+    }
+  }
+
+  currentExcerpt(): string {
+    switch (this.activeTranslationLang()) {
+      case 'PT': return this.translationPT.excerpt;
+      case 'EN': return this.translationEN.excerpt;
+      default: return this.form.excerpt;
+    }
+  }
+
+  setExcerpt(value: string) {
+    switch (this.activeTranslationLang()) {
+      case 'PT': this.translationPT.excerpt = value; break;
+      case 'EN': this.translationEN.excerpt = value; break;
+      default: this.form.excerpt = value; break;
+    }
+  }
+
+  currentBody(): string {
+    switch (this.activeTranslationLang()) {
+      case 'PT': return this.translationPT.body;
+      case 'EN': return this.translationEN.body;
+      default: return this.form.body;
+    }
+  }
+
+  setBody(value: string) {
+    switch (this.activeTranslationLang()) {
+      case 'PT': this.translationPT.body = value; break;
+      case 'EN': this.translationEN.body = value; break;
+      default: this.form.body = value; break;
+    }
+    this.onContentChanged();
+  }
+
+  currentMetaTitle(): string {
+    switch (this.activeTranslationLang()) {
+      case 'PT': return this.translationPT.metaTitle;
+      case 'EN': return this.translationEN.metaTitle;
+      default: return this.form.metaTitle || '';
+    }
+  }
+
+  setMetaTitle(value: string) {
+    switch (this.activeTranslationLang()) {
+      case 'PT': this.translationPT.metaTitle = value; break;
+      case 'EN': this.translationEN.metaTitle = value; break;
+      default: this.form.metaTitle = value; break;
+    }
+  }
+
+  currentMetaDesc(): string {
+    switch (this.activeTranslationLang()) {
+      case 'PT': return this.translationPT.metaDescription;
+      case 'EN': return this.translationEN.metaDescription;
+      default: return this.form.metaDescription || '';
+    }
+  }
+
+  setMetaDesc(value: string) {
+    switch (this.activeTranslationLang()) {
+      case 'PT': this.translationPT.metaDescription = value; break;
+      case 'EN': this.translationEN.metaDescription = value; break;
+      default: this.form.metaDescription = value; break;
+    }
+  }
+
   ngOnInit() {
     this.categoryService.getAdminCategories().subscribe(c => this.categories.set(c));
     this.authorService.getAdminAuthors().subscribe(a => this.authors.set(a));
@@ -280,6 +378,15 @@ export class ArticleFormComponent implements OnInit {
           publishedDate: a.publishedDate || '', readingTimeMinutes: a.readingTimeMinutes,
           metaTitle: a.metaTitle || '', metaDescription: a.metaDescription || ''
         };
+        if (a.translations) {
+          for (const t of a.translations) {
+            if (t.language === 'PT') {
+              this.translationPT = { title: t.title || '', excerpt: t.excerpt || '', body: t.body || '', metaTitle: t.metaTitle || '', metaDescription: t.metaDescription || '' };
+            } else if (t.language === 'EN') {
+              this.translationEN = { title: t.title || '', excerpt: t.excerpt || '', body: t.body || '', metaTitle: t.metaTitle || '', metaDescription: t.metaDescription || '' };
+            }
+          }
+        }
         this.calculateReadingTime();
       });
     }
@@ -341,6 +448,10 @@ export class ArticleFormComponent implements OnInit {
     }
     this.calculateReadingTime();
     this.form.readingTimeMinutes = this.estimatedReadingTime();
+    const translations: ArticleTranslation[] = [];
+    if (this.translationPT.title) translations.push({ language: 'PT', ...this.translationPT });
+    if (this.translationEN.title) translations.push({ language: 'EN', ...this.translationEN });
+    this.form.translations = translations;
     const obs = this.isEdit()
       ? this.articleService.updateArticle(this.articleId()!, this.form)
       : this.articleService.createArticle(this.form);
