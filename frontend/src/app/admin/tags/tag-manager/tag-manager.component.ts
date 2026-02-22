@@ -1,21 +1,22 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagService } from '../../../core/services/tag.service';
 import { Tag } from '../../../core/models/tag.model';
 
 @Component({
   selector: 'app-tag-manager',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslateModule],
   template: `
     <div class="tag-page">
       <div class="page-header">
-        <h1>Tags</h1>
+        <h1>{{ 'admin.tagManager.title' | translate }}</h1>
       </div>
 
       <div class="create-row">
-        <input type="text" [(ngModel)]="newTagName" placeholder="Neuer Tag…" (keyup.enter)="createTag()" />
-        <button class="btn-primary" (click)="createTag()">Erstellen</button>
+        <input type="text" [(ngModel)]="newTagName" [placeholder]="'admin.tagManager.newTag' | translate" (keyup.enter)="createTag()" />
+        <button class="btn-primary" (click)="createTag()">{{ 'admin.tagManager.create' | translate }}</button>
       </div>
 
       <div class="tag-list">
@@ -27,10 +28,10 @@ import { Tag } from '../../../core/models/tag.model';
               <button class="action-btn" (click)="cancelEdit()">&#10005;</button>
             } @else {
               <span class="tag-name" (click)="startEdit(tag)">{{ tag.name }}</span>
-              <span class="tag-count">{{ tag.articleCount }} Beiträge</span>
-              <button class="action-btn" (click)="startEdit(tag)" title="Umbenennen">&#9998;</button>
-              <button class="action-btn" (click)="selectForMerge(tag)" title="Zusammenführen" [class.selected]="mergeSource()?.id === tag.id">&#128279;</button>
-              <button class="action-btn danger" (click)="deleteTag(tag)" title="Löschen">&#128465;</button>
+              <span class="tag-count">{{ 'admin.tagManager.articleCount' | translate:{count: tag.articleCount} }}</span>
+              <button class="action-btn" (click)="startEdit(tag)" [title]="'admin.tagManager.rename' | translate">&#9998;</button>
+              <button class="action-btn" (click)="selectForMerge(tag)" [title]="'admin.tagManager.merge' | translate" [class.selected]="mergeSource()?.id === tag.id">&#128279;</button>
+              <button class="action-btn danger" (click)="deleteTag(tag)" [title]="'admin.tagManager.delete' | translate">&#128465;</button>
             }
           </div>
         }
@@ -38,7 +39,7 @@ import { Tag } from '../../../core/models/tag.model';
 
       @if (mergeSource()) {
         <div class="merge-bar">
-          <span>Tag "{{ mergeSource()!.name }}" zusammenführen mit:</span>
+          <span>{{ 'admin.tagManager.mergeWith' | translate:{name: mergeSource()!.name} }}</span>
           <select [(ngModel)]="mergeTargetId">
             @for (tag of tags(); track tag.id) {
               @if (tag.id !== mergeSource()!.id) {
@@ -46,8 +47,8 @@ import { Tag } from '../../../core/models/tag.model';
               }
             }
           </select>
-          <button class="btn-primary" (click)="merge()">Zusammenführen</button>
-          <button class="btn-secondary" (click)="cancelMerge()">Abbrechen</button>
+          <button class="btn-primary" (click)="merge()">{{ 'admin.tagManager.mergeBtn' | translate }}</button>
+          <button class="btn-secondary" (click)="cancelMerge()">{{ 'admin.tagManager.mergeCancel' | translate }}</button>
         </div>
       }
     </div>
@@ -89,6 +90,7 @@ import { Tag } from '../../../core/models/tag.model';
 })
 export class TagManagerComponent implements OnInit {
   private tagService = inject(TagService);
+  private translate = inject(TranslateService);
 
   tags = signal<Tag[]>([]);
   newTagName = '';
@@ -131,8 +133,8 @@ export class TagManagerComponent implements OnInit {
 
   deleteTag(tag: Tag) {
     const msg = tag.articleCount > 0
-      ? `Tag "${tag.name}" wird von ${tag.articleCount} Beiträgen entfernt. Wirklich löschen?`
-      : `Tag "${tag.name}" wirklich löschen?`;
+      ? this.translate.instant('admin.tagManager.confirmDeleteWithArticles', { name: tag.name, count: tag.articleCount })
+      : this.translate.instant('admin.tagManager.confirmDelete', { name: tag.name });
     if (confirm(msg)) {
       this.tagService.deleteTag(tag.id).subscribe(() => this.loadTags());
     }
