@@ -4,6 +4,7 @@ import de.tzr.model.*;
 import de.tzr.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +32,9 @@ public class DataSeeder implements CommandLineRunner {
     private final TagTranslationRepository tagTranslationRepository;
     private final TranslationTaskRepository translationTaskRepository;
 
+    @Value("${ADMIN_PASSWORD:tzr2026}")
+    private String adminPassword;
+
     @Override
     public void run(String... args) {
         if (adminUserRepository.count() > 0) {
@@ -50,7 +54,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedAdminUser() {
         AdminUser admin = AdminUser.builder()
             .username("admin")
-            .passwordHash(passwordEncoder.encode("tzr2026"))
+            .passwordHash(passwordEncoder.encode(adminPassword))
             .displayName("Administrator")
             .role(AdminRole.ADMIN)
             .build();

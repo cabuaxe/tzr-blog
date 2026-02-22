@@ -35,11 +35,11 @@ public class NewsletterController {
         try {
             newsletterService.confirmSubscription(token);
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("https://tzr.zuacaldeira.com/?subscribed=true"))
+                    .location(URI.create(baseUrl + "/?subscribed=true"))
                     .build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("https://tzr.zuacaldeira.com/?subscribed=error"))
+                    .location(URI.create(baseUrl + "/?subscribed=error"))
                     .build();
         }
     }
