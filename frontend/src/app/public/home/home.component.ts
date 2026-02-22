@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { CategoryService } from '../../core/services/category.service';
 import { NewsletterService } from '../../core/services/newsletter.service';
@@ -17,46 +17,38 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [RouterLink, ArticleCardComponent, CategoryPillsComponent, PaginationComponent, ReadingTimePipe, DateDePipe, FormsModule],
   template: `
-    <!-- Hero Section -->
+    <!-- Hero Section (full-screen) -->
     @if (featured()) {
-      <section class="hero">
-        <div class="container">
-          <div class="hero-grid">
-            <a [routerLink]="['/artikel', featured()!.slug]" class="hero-main"
-               [style.background-image]="'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 60%), url(' + featured()!.coverImageUrl + '?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop)'">
-              <div class="hero-content">
-                <span class="hero-cat" [style.background]="featured()!.category.bgColor" [style.color]="featured()!.category.color">
-                  {{ featured()!.category.emoji }} {{ featured()!.category.displayName }}
-                </span>
-                <h1 class="hero-title">{{ featured()!.title }}</h1>
-                <p class="hero-excerpt">{{ featured()!.excerpt }}</p>
-                <div class="hero-meta">
-                  <span>{{ featured()!.author.name }}</span>
-                  <span class="sep">&middot;</span>
-                  <span>{{ featured()!.publishedDate | dateDe }}</span>
-                  <span class="sep">&middot;</span>
-                  <span>{{ featured()!.readingTimeMinutes | readingTime }}</span>
-                </div>
-              </div>
-            </a>
-            <div class="hero-side">
-              @for (article of sideArticles(); track article.id) {
-                <a [routerLink]="['/artikel', article.slug]" class="side-card"
-                   [style.background-image]="'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%), url(' + article.coverImageUrl + '?auto=compress&cs=tinysrgb&w=600&h=300&fit=crop)'">
-                  <div class="side-content">
-                    <span class="side-cat" [style.background]="article.category.bgColor" [style.color]="article.category.color">
-                      {{ article.category.emoji }} {{ article.category.displayName }}
-                    </span>
-                    <h3>{{ article.title }}</h3>
-                    <div class="side-meta">
-                      <span>{{ article.publishedDate | dateDe }}</span>
-                      <span class="sep">&middot;</span>
-                      <span>{{ article.readingTimeMinutes | readingTime }}</span>
-                    </div>
-                  </div>
-                </a>
-              }
+      <section class="hero"
+               [style.background-image]="'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.1) 70%), url(' + featured()!.coverImageUrl + '?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop)'">
+        <div class="hero-inner container">
+          <div class="hero-content">
+            <span class="hero-cat" [style.background]="featured()!.category.bgColor" [style.color]="featured()!.category.color">
+              {{ featured()!.category.emoji }} {{ featured()!.category.displayName }}
+            </span>
+            <h1 class="hero-title">{{ featured()!.title }}</h1>
+            <p class="hero-excerpt">{{ featured()!.excerpt }}</p>
+            <div class="hero-meta">
+              <span>{{ featured()!.author.name }}</span>
+              <span class="sep">&middot;</span>
+              <span>{{ featured()!.publishedDate | dateDe }}</span>
+              <span class="sep">&middot;</span>
+              <span>{{ featured()!.readingTimeMinutes | readingTime }}</span>
             </div>
+            <a [routerLink]="['/artikel', featured()!.slug]" class="hero-cta">Artikel lesen</a>
+          </div>
+          <div class="hero-side">
+            @for (article of sideArticles(); track article.id) {
+              <a [routerLink]="['/artikel', article.slug]" class="side-card">
+                <img [src]="article.coverImageUrl + '?auto=compress&cs=tinysrgb&w=120&h=80&fit=crop'" [alt]="article.title" class="side-thumb" />
+                <div class="side-content">
+                  <span class="side-cat" [style.background]="article.category.bgColor" [style.color]="article.category.color">
+                    {{ article.category.emoji }} {{ article.category.displayName }}
+                  </span>
+                  <h3>{{ article.title }}</h3>
+                </div>
+              </a>
+            }
           </div>
         </div>
       </section>
@@ -113,54 +105,73 @@ import { FormsModule } from '@angular/forms';
     </section>
   `,
   styles: [`
-    .hero { padding: 1.5rem 0 0.5rem; }
-    .hero-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.2rem; min-height: 420px; }
-    .hero-main {
-      border-radius: 14px; background-size: cover; background-position: center;
-      display: flex; align-items: flex-end; padding: 2.2rem; position: relative; overflow: hidden;
-      min-height: 420px;
+    :host { display: block; }
+    .hero {
+      min-height: calc(100vh - 52px);
+      background-size: cover; background-position: center;
+      display: flex; align-items: flex-end;
     }
-    .hero-content { position: relative; z-index: 1; color: #fff; max-width: 560px; }
+    .hero-inner {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 2.5rem; padding-bottom: 3rem; width: 100%;
+    }
+    .hero-content { color: #fff; max-width: 620px; flex: 1; }
     .hero-cat {
-      padding: 0.25rem 0.7rem; border-radius: 5px; font-size: 0.74rem; font-weight: 700;
+      padding: 0.3rem 0.8rem; border-radius: 5px; font-size: 0.76rem; font-weight: 700;
       display: inline-block;
     }
     .hero-title {
       font-family: 'Lora', serif; font-weight: 700;
-      font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.25; margin: 0.7rem 0 0.5rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.2; margin: 0.8rem 0 0.6rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .hero-excerpt {
-      font-size: 0.9rem; line-height: 1.55; opacity: 0.92; max-width: 520px;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      font-size: 1rem; line-height: 1.6; opacity: 0.92; max-width: 540px;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .hero-meta { font-size: 0.78rem; opacity: 0.85; margin-top: 0.7rem; display: flex; gap: 0.4rem; }
+    .hero-meta { font-size: 0.8rem; opacity: 0.85; margin-top: 0.8rem; display: flex; gap: 0.4rem; }
     .sep { opacity: 0.5; }
-    .hero-side { display: flex; flex-direction: column; gap: 1.2rem; }
-    .side-card {
-      flex: 1; border-radius: 14px; background-size: cover; background-position: center;
-      display: flex; align-items: flex-end; padding: 1.4rem; overflow: hidden;
-      min-height: 200px; transition: transform 0.2s;
+    .hero-cta {
+      display: inline-block; margin-top: 1.2rem;
+      padding: 0.6rem 1.6rem; background: #fff; color: var(--ink);
+      border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+      transition: all 0.2s;
     }
-    .side-card:hover { transform: scale(1.01); }
-    .side-content { color: #fff; position: relative; z-index: 1; }
-    .side-cat { padding: 0.2rem 0.55rem; border-radius: 5px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .hero-side {
+      display: flex; flex-direction: column; gap: 0.8rem;
+      min-width: 300px; max-width: 340px;
+    }
+    .side-card {
+      display: flex; align-items: center; gap: 0.8rem;
+      background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 0.7rem; transition: all 0.2s;
+    }
+    .side-card:hover { background: rgba(255,255,255,0.2); transform: translateX(4px); }
+    .side-thumb {
+      width: 72px; height: 52px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
+    }
+    .side-content { color: #fff; }
+    .side-cat {
+      padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700;
+      display: inline-block;
+    }
     .side-content h3 {
-      font-family: 'Lora', serif; font-size: 1rem; font-weight: 600; line-height: 1.35; margin-top: 0.5rem;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      font-family: 'Lora', serif; font-size: 0.85rem; font-weight: 600; line-height: 1.3;
+      margin-top: 0.25rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .side-meta { font-size: 0.72rem; opacity: 0.85; margin-top: 0.35rem; display: flex; gap: 0.3rem; }
     .subscribe-msg { font-size: 0.85rem; margin-top: 1rem; }
     @media (max-width: 960px) {
-      .hero-grid { grid-template-columns: 1fr; min-height: auto; }
-      .hero-main { min-height: 320px; }
-      .hero-side { flex-direction: row; }
-      .side-card { min-height: 180px; }
+      .hero-inner { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .hero-side { flex-direction: row; min-width: auto; max-width: 100%; width: 100%; }
+      .side-card { flex: 1; }
     }
     @media (max-width: 640px) {
+      .hero { min-height: calc(100vh - 52px); }
       .hero-side { flex-direction: column; }
-      .hero-main { min-height: 280px; padding: 1.5rem; }
+      .hero-inner { padding-bottom: 2rem; }
     }
   `]
 })
@@ -168,6 +179,7 @@ export class HomeComponent implements OnInit {
   private articleService = inject(ArticleService);
   private categoryService = inject(CategoryService);
   private newsletterService = inject(NewsletterService);
+  private route = inject(ActivatedRoute);
 
   featured = signal<ArticleList | null>(null);
   sideArticles = signal<ArticleList[]>([]);
@@ -186,14 +198,25 @@ export class HomeComponent implements OnInit {
     this.loadCategories();
     this.loadArticles();
     this.loadAcademicArticles();
+    this.checkSubscriptionStatus();
+  }
+
+  private checkSubscriptionStatus() {
+    const subscribed = this.route.snapshot.queryParamMap.get('subscribed');
+    if (subscribed === 'true') {
+      this.subscribeMsg.set('Ihre Anmeldung wurde erfolgreich bestätigt! Willkommen!');
+      this.subscribeMsgError.set(false);
+    } else if (subscribed === 'error') {
+      this.subscribeMsg.set('Der Bestätigungslink ist ungültig oder abgelaufen.');
+      this.subscribeMsgError.set(true);
+    }
   }
 
   loadFeatured() {
     this.articleService.getPublishedArticles({ size: 3, sort: 'publishedDate,desc' }).subscribe(res => {
       const all = res.content;
-      const feat = all.find(a => a.featured) || all[0];
-      this.featured.set(feat || null);
-      this.sideArticles.set(all.filter(a => a !== feat).slice(0, 2));
+      this.featured.set(all[0] || null);
+      this.sideArticles.set(all.slice(1, 3));
     });
   }
 
@@ -231,13 +254,13 @@ export class HomeComponent implements OnInit {
   onSubscribe() {
     if (!this.newsletterEmail) return;
     this.newsletterService.subscribe(this.newsletterEmail).subscribe({
-      next: () => {
-        this.subscribeMsg.set('Vielen Dank! Sie erhalten eine Bestätigung per E-Mail.');
+      next: (res: any) => {
+        this.subscribeMsg.set(res.message || 'Bitte überprüfen Sie Ihr Postfach und bestätigen Sie Ihre Anmeldung.');
         this.subscribeMsgError.set(false);
         this.newsletterEmail = '';
       },
       error: () => {
-        this.subscribeMsg.set('Diese E-Mail-Adresse ist bereits registriert.');
+        this.subscribeMsg.set('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
         this.subscribeMsgError.set(true);
       }
     });

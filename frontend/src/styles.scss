@@ -23,7 +23,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   --ink: #37352f; --ink-light: #787774; --ink-faint: #b4b3af;
   --surface: #fff; --surface-hover: #f7f6f3;
   --border: #e8e6e1; --border-light: #f1f0ec;
-  --max-w: 1100px; --max-w-article: 720px;
+  --max-w: 1100px; --max-w-article: 860px;
 }
 
 .container { max-width: var(--max-w); margin: 0 auto; padding: 0 2rem; }
@@ -34,10 +34,14 @@ button { font-family: inherit; cursor: pointer; border: none; }
   font-size: 1.03rem;
   line-height: 1.85;
   color: #333340;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
 
   p { margin-bottom: 1.3rem; }
 
-  p:first-of-type::first-letter {
+  > p:first-of-type::first-letter {
     font-family: 'Lora', serif;
     font-size: 3.2rem;
     font-weight: 700;
