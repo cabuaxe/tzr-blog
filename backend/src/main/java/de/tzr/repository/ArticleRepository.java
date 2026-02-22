@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
@@ -43,4 +44,10 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     long countByAuthorId(Long authorId);
     long countByCategoryId(Long categoryId);
+
+    @Query("SELECT a.category.id, COUNT(a) FROM Article a GROUP BY a.category.id")
+    List<Object[]> countGroupedByCategoryId();
+
+    @Query("SELECT a.author.id, COUNT(a) FROM Article a GROUP BY a.author.id")
+    List<Object[]> countGroupedByAuthorId();
 }

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,10 @@ public class AuthorService {
 
     @Transactional(readOnly = true)
     public List<AuthorDTO> getAll() {
+        Map<Long, Long> counts = articleRepository.countGroupedByAuthorId().stream()
+            .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
         return authorRepository.findAll().stream()
-            .map(a -> authorMapper.toDTO(a, (int) articleRepository.countByAuthorId(a.getId())))
+            .map(a -> authorMapper.toDTO(a, counts.getOrDefault(a.getId(), 0L).intValue()))
             .toList();
     }
 

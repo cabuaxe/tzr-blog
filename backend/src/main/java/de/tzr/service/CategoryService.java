@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +37,10 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryDTO> getAll(Language lang) {
+        Map<Long, Long> counts = articleRepository.countGroupedByCategoryId().stream()
+            .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-            .map(c -> categoryMapper.toDTO(c, (int) articleRepository.countByCategoryId(c.getId()), lang))
+            .map(c -> categoryMapper.toDTO(c, counts.getOrDefault(c.getId(), 0L).intValue(), lang))
             .toList();
     }
 
