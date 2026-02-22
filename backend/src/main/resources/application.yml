@@ -4,8 +4,21 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 16
+  mail:
+    host: ${MAIL_HOST:smtp.strato.de}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USER:tzr@zuacaldeira.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
 
 jwt:
   secret: ${JWT_SECRET:tzr-dev-secret-change-in-production-min-256-bit-key-here-1234567890}
   expiration-ms: 3600000
   refresh-expiration-ms: 604800000
+
+newsletter:
+  from: tzr@zuacaldeira.com
+  from-name: "TZR — Frühkindliche Bildung"
+  base-url: ${APP_BASE_URL:http://localhost:8080}

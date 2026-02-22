@@ -25,6 +25,11 @@ public class NewsletterSubscriber {
     @Builder.Default
     private Boolean confirmed = false;
 
+    @Column(unique = true)
+    private String confirmationToken;
+
+    private LocalDateTime tokenExpiresAt;
+
     @PrePersist
     protected void onCreate() {
         subscribedAt = LocalDateTime.now();

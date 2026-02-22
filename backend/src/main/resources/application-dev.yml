@@ -9,3 +9,9 @@ spring:
   h2:
     console:
       enabled: true
+  mail:
+    host: localhost
+    port: 1025
+
+newsletter:
+  base-url: http://localhost:8080
