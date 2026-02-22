@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, SecurityContext } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArticleService } from '../../core/services/article.service';
 import { Article } from '../../core/models/article.model';
@@ -6,6 +6,7 @@ import { ArticleList } from '../../core/models/article.model';
 import { ArticleCardComponent } from '../../shared/components/article-card/article-card.component';
 import { ReadingTimePipe } from '../../shared/pipes/reading-time.pipe';
 import { DateDePipe } from '../../shared/pipes/date-de.pipe';
+import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouteHelperService } from '../../core/services/route-helper.service';
 
@@ -145,6 +146,7 @@ import { RouteHelperService } from '../../core/services/route-helper.service';
 export class ArticleDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private articleService = inject(ArticleService);
+  private sanitizer = inject(DomSanitizer);
   routeHelper = inject(RouteHelperService);
 
   article = signal<Article | null>(null);
@@ -153,10 +155,11 @@ export class ArticleDetailComponent implements OnInit {
   cleanBody = computed(() => {
     const body = this.article()?.body;
     if (!body) return '';
-    return body
+    const cleaned = body
       .replace(/<article>\s*/gi, '')
       .replace(/<\/article>\s*/gi, '')
       .replace(/<h1[^>]*>.*?<\/h1>\s*/gi, '');
+    return this.sanitizer.sanitize(SecurityContext.HTML, cleaned) ?? '';
   });
 
   ngOnInit() {
