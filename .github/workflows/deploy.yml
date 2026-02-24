@@ -120,6 +120,21 @@ jobs:
           systemctl enable --now certbot.timer || true
           ENDSSH
 
+      - name: Create .env on server
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ env.VPS_HOST }} << ENDSSH
+          cat > ${{ env.PROJECT_DIR }}/.env << 'ENVEOF'
+          VERSION=staging
+          DB_USER=tzr
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          MAIL_USER=tzr@zuacaldeira.com
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          APP_BASE_URL=https://staging.tzr.zuacaldeira.com
+          DEEPL_API_KEY=${{ secrets.DEEPL_API_KEY }}
+          ENVEOF
+          ENDSSH
+
       - name: Pull image and deploy
         run: |
           ssh -i ~/.ssh/deploy_key root@${{ env.VPS_HOST }} << 'ENDSSH'
@@ -220,6 +235,21 @@ jobs:
             --keep-until-expiring
 
           systemctl enable --now certbot.timer || true
+          ENDSSH
+
+      - name: Create .env on server
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ env.VPS_HOST }} << ENDSSH
+          cat > ${{ env.PROJECT_DIR }}/.env << 'ENVEOF'
+          VERSION=${{ steps.version.outputs.tag }}
+          DB_USER=tzr
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          MAIL_USER=tzr@zuacaldeira.com
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          APP_BASE_URL=https://tzr.zuacaldeira.com
+          DEEPL_API_KEY=${{ secrets.DEEPL_API_KEY }}
+          ENVEOF
           ENDSSH
 
       - name: Pull image and deploy
