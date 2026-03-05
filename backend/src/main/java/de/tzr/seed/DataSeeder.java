@@ -283,6 +283,12 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.pexels.com/photos/8422173/pexels-photo-8422173.jpeg", "Pavel Danilyuk",
             List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"));
 
+        createArticle(catMap, authorMap, tags, "natur-jahreslauf-jahreszeitenfeste",
+            "Die Natur und der Jahreslauf: Jahreszeitenfeste in der Kita bewusst gestalten", "natur", "\uD83C\uDF42", "redaktion",
+            LocalDate.of(2026, 3, 5), false, false,
+            "https://images.pexels.com/photos/16724787/pexels-photo-16724787.jpeg", "Yakup Polat",
+            List.of("Praxisimpulse", "Nachhaltigkeit", "BNE", "Raumgestaltung"));
+
         log.info("Created {} articles.", articleRepository.count());
     }
 
