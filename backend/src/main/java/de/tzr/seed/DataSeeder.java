@@ -277,6 +277,12 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.pexels.com/photos/4885131/pexels-photo-4885131.jpeg", "Skyler Ewing",
             List.of("Theorie", "Medienp\u00e4dagogik"));
 
+        createArticle(catMap, authorMap, tags, "religionsfreiheit-vielfalt-kita",
+            "Religionsfreiheit und Vielfalt: Kinder in der multikulturellen Kita begleiten", "soziales", "\uD83D\uDD4C", "redaktion",
+            LocalDate.of(2026, 3, 5), false, false,
+            "https://images.pexels.com/photos/8422173/pexels-photo-8422173.jpeg", "Pavel Danilyuk",
+            List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"));
+
         log.info("Created {} articles.", articleRepository.count());
     }
 
