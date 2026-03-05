@@ -74,7 +74,7 @@ export class LoginComponent {
     this.error.set('');
     this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: () => {
-        this.router.navigate(['/admin']);
+        setTimeout(() => this.router.navigate(['/admin']), 50);
       },
       error: () => {
         this.error.set(this.translate.instant('admin.loginError'));
