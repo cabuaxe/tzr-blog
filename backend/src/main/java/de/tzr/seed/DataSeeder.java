@@ -281,13 +281,13 @@ public class DataSeeder implements CommandLineRunner {
             "Religionsfreiheit und Vielfalt: Kinder in der multikulturellen Kita begleiten", "soziales", "\uD83D\uDD4C", "redaktion",
             LocalDate.of(2026, 3, 5), false, false,
             "https://images.pexels.com/photos/8422173/pexels-photo-8422173.jpeg", "Pavel Danilyuk",
-            List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"));
+            List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"), ArticleStatus.DRAFT);
 
         createArticle(catMap, authorMap, tags, "natur-jahreslauf-jahreszeitenfeste",
             "Die Natur und der Jahreslauf: Jahreszeitenfeste in der Kita bewusst gestalten", "natur", "\uD83C\uDF42", "redaktion",
             LocalDate.of(2026, 3, 5), false, false,
             "https://images.pexels.com/photos/16724787/pexels-photo-16724787.jpeg", "Yakup Polat",
-            List.of("Praxisimpulse", "Nachhaltigkeit", "BNE", "Raumgestaltung"));
+            List.of("Praxisimpulse", "Nachhaltigkeit", "BNE", "Raumgestaltung"), ArticleStatus.DRAFT);
 
         log.info("Created {} articles.", articleRepository.count());
     }
@@ -296,6 +296,14 @@ public class DataSeeder implements CommandLineRunner {
                                String slug, String title, String categorySlug, String emoji, String authorSlug,
                                LocalDate date, boolean featured, boolean academic,
                                String coverUrl, String credit, List<String> tagNames) {
+        createArticle(catMap, authorMap, tags, slug, title, categorySlug, emoji, authorSlug,
+            date, featured, academic, coverUrl, credit, tagNames, ArticleStatus.PUBLISHED);
+    }
+
+    private void createArticle(Map<String, Category> catMap, Map<String, Author> authorMap, Map<String, Tag> tags,
+                               String slug, String title, String categorySlug, String emoji, String authorSlug,
+                               LocalDate date, boolean featured, boolean academic,
+                               String coverUrl, String credit, List<String> tagNames, ArticleStatus status) {
         String body = loadArticleBody(slug);
         String excerpt = generateExcerpt(body);
 
@@ -316,7 +324,7 @@ public class DataSeeder implements CommandLineRunner {
             .cardEmoji(emoji)
             .coverImageUrl(coverUrl)
             .coverImageCredit(credit)
-            .status(ArticleStatus.PUBLISHED)
+            .status(status)
             .academic(academic)
             .featured(featured)
             .publishedDate(date)
