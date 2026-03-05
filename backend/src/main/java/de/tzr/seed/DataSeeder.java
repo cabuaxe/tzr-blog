@@ -295,6 +295,12 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.pexels.com/photos/6157556/pexels-photo-6157556.jpeg", "cottonbro studio",
             List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"), ArticleStatus.DRAFT);
 
+        createArticle(catMap, authorMap, tags, "jahreszeitenfeste-fachueberblick",
+            "Jahreszeitenfeste in der Kita: Ein Fach\u00fcberblick zwischen Tradition, Interkulturalit\u00e4t und Bildungsauftrag", "soziales", "\uD83D\uDDD3\uFE0F", "thomas-weber",
+            LocalDate.of(2026, 3, 5), false, true,
+            "https://images.pexels.com/photos/8363102/pexels-photo-8363102.jpeg", "RDNE Stock project",
+            List.of("BBP", "Theorie", "Anti-Bias", "Diversit\u00e4t", "Nachhaltigkeit"), ArticleStatus.DRAFT);
+
         log.info("Created {} articles.", articleRepository.count());
     }
 
