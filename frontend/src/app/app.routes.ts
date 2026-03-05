@@ -25,12 +25,6 @@ const publicChildren = [
 
 export const routes: Routes = [
   {
-    path: ':lang',
-    canActivate: [languageGuard],
-    loadComponent: () => import('./public-layout/public-layout.component').then(m => m.PublicLayoutComponent),
-    children: publicChildren,
-  },
-  {
     path: 'admin',
     children: [
       { path: 'login', loadComponent: () => import('./admin/login/login.component').then(m => m.LoginComponent) },
@@ -53,6 +47,12 @@ export const routes: Routes = [
         ]
       }
     ]
+  },
+  {
+    path: ':lang',
+    canActivate: [languageGuard],
+    loadComponent: () => import('./public-layout/public-layout.component').then(m => m.PublicLayoutComponent),
+    children: publicChildren,
   },
   { path: '', redirectTo: '/de', pathMatch: 'full' },
   { path: '**', redirectTo: '/de' }
