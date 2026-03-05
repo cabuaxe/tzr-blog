@@ -301,6 +301,18 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.pexels.com/photos/8363102/pexels-photo-8363102.jpeg", "RDNE Stock project",
             List.of("BBP", "Theorie", "Anti-Bias", "Diversit\u00e4t", "Nachhaltigkeit"), ArticleStatus.DRAFT);
 
+        createArticle(catMap, authorMap, tags, "gruppenformen-konformitaet-kita",
+            "Die Gruppe in der Kita: Gruppenformen, Merkmale und der Druck zur Konformit\u00e4t", "soziales", "\uD83D\uDC65", "thomas-weber",
+            LocalDate.of(2026, 3, 5), false, true,
+            "https://images.pexels.com/photos/8613089/pexels-photo-8613089.jpeg", "Yan Krukau",
+            List.of("BBP", "Theorie", "Praxisimpulse"), ArticleStatus.DRAFT);
+
+        createArticle(catMap, authorMap, tags, "gruppenrollen-kommunikation-kita",
+            "Gruppenrollen und Gruppenkommunikation in der Kita: Wie Kinder in Gruppen interagieren", "soziales", "\uD83D\uDDE3\uFE0F", "lisa-hartmann",
+            LocalDate.of(2026, 3, 5), false, false,
+            "https://images.pexels.com/photos/8612976/pexels-photo-8612976.jpeg", "Yan Krukau",
+            List.of("Praxisimpulse", "Beobachtung", "Dokumentation"), ArticleStatus.DRAFT);
+
         log.info("Created {} articles.", articleRepository.count());
     }
 
