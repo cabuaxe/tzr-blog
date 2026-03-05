@@ -289,6 +289,12 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.pexels.com/photos/16724787/pexels-photo-16724787.jpeg", "Yakup Polat",
             List.of("Praxisimpulse", "Nachhaltigkeit", "BNE", "Raumgestaltung"), ArticleStatus.DRAFT);
 
+        createArticle(catMap, authorMap, tags, "feste-symbole-westliche-werte-diskurs",
+            "Feste, Symbole und westliche Werte: Kann gemeinsames Feiern zum Diskurs einladen?", "soziales", "\uD83D\uDDE3\uFE0F", "thomas-weber",
+            LocalDate.of(2026, 3, 5), false, false,
+            "https://images.pexels.com/photos/6157556/pexels-photo-6157556.jpeg", "cottonbro studio",
+            List.of("Praxisimpulse", "Anti-Bias", "Diversit\u00e4t", "Kinderrechte"), ArticleStatus.DRAFT);
+
         log.info("Created {} articles.", articleRepository.count());
     }
 
